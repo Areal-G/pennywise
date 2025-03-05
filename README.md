@@ -1,17 +1,36 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# pennywise
 
-## Getting Started
+*a personal finance dashboard. accounts, budgets, goals, one screen.*
 
-First, run the development server:
+next.js app that shows where the money went. runs on seeded sample data for now, so no database, no auth and no api keys. you open it and you're the sample user.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
+## what it does
+
+- dashboard with insight cards (spending spikes, savings rate, top merchant)
+- transactions: search, filters, csv export
+- budgets and savings goals with progress rings
+- analytics: spending heatmap + category donut
+- cards with a freeze toggle and spending limits
+- light / dark theme
+
+edits to transactions, budgets and goals stick around in `localStorage`. clear it to get the seed back.
+
+## running it
+
+node 20+ and pnpm.
+
+```sh
+pnpm install
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+open http://localhost:3000.
+
+other stuff:
+
+```sh
+pnpm build
+pnpm lint
+```
+
+no tests yet.
