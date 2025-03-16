@@ -1,11 +1,12 @@
 "use client"
 
+import { LogoMark } from "@/components/brand/logo"
 import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { motion } from "motion/react"
 import {
-  LandmarkIcon,
   MailIcon,
   LockIcon,
   EyeIcon,
@@ -15,6 +16,7 @@ import {
   ShieldCheckIcon,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { toast } from "@/components/ui/toaster"
 import {
   InputGroup,
   InputGroupAddon,
@@ -48,6 +50,7 @@ const itemVariants = {
 }
 
 export default function SignInPage() {
+  const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
@@ -58,23 +61,27 @@ export default function SignInPage() {
     setTimeout(() => {
       setIsLoading(false)
       setIsSuccess(true)
-      setTimeout(() => setIsSuccess(false), 2000)
+      // Demo only: there is no auth backend, so continue straight to the app
+      setTimeout(() => router.push("/dashboard"), 800)
     }, 1500)
+  }
+
+  const handleSocial = (provider: string) => {
+    toast(`Signed in with ${provider}`, { description: "Demo mode: no real account was used." })
+    router.push("/dashboard")
   }
 
   return (
     <div className="flex min-h-svh">
       {/* Left panel - Globe */}
-      <div className="relative hidden w-1/2 flex-col justify-between bg-[#09090b] lg:flex">
+      <div className="relative hidden w-1/2 flex-col justify-between bg-linear-to-br from-indigo-950 via-zinc-950 to-violet-950 lg:flex">
         {/* Logo */}
-        <a href="/dashboard" className="relative z-20 flex items-center gap-2.5 p-8">
-          <div className="flex size-8 items-center justify-center rounded-lg bg-white text-black">
-            <LandmarkIcon className="size-4" />
-          </div>
+        <Link href="/dashboard" className="relative z-20 flex items-center gap-2.5 p-8">
+          <LogoMark className="size-8" />
           <span className="text-sm font-semibold text-white">
-            Shadcn Fintech
+            Pennywise
           </span>
-        </a>
+        </Link>
 
         {/* Globe */}
         <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
@@ -108,9 +115,7 @@ export default function SignInPage() {
             className="mb-8 flex flex-col items-center lg:hidden"
             variants={itemVariants}
           >
-            <div className="flex size-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-              <LandmarkIcon className="size-5" />
-            </div>
+            <LogoMark className="size-11 shadow-lg shadow-primary/25" title="Pennywise" />
           </motion.div>
 
           {/* Heading */}
@@ -128,7 +133,7 @@ export default function SignInPage() {
             className="mt-8 grid grid-cols-2 gap-3"
             variants={itemVariants}
           >
-            <Button variant="outline" size="lg" className="gap-2">
+            <Button variant="outline" size="lg" className="gap-2" onClick={() => handleSocial("Google")}>
               <Image
                 src="/logos/google-com.png"
                 alt="Google"
@@ -138,7 +143,7 @@ export default function SignInPage() {
               />
               <span className="text-sm">Google</span>
             </Button>
-            <Button variant="outline" size="lg" className="gap-2">
+            <Button variant="outline" size="lg" className="gap-2" onClick={() => handleSocial("Apple")}>
               <Image
                 src="/logos/apple-com.png"
                 alt="Apple"
@@ -189,12 +194,15 @@ export default function SignInPage() {
                 <label htmlFor="password" className="text-sm font-medium">
                   Password
                 </label>
-                <Link
-                  href="#"
+                <button
+                  type="button"
+                  onClick={() =>
+                    toast("Password reset link sent", { description: "Check your inbox for instructions." })
+                  }
                   className="text-xs text-muted-foreground transition-colors hover:text-foreground"
                 >
                   Forgot password?
-                </Link>
+                </button>
               </div>
               <InputGroup>
                 <InputGroupAddon align="inline-start">
@@ -267,7 +275,7 @@ export default function SignInPage() {
             variants={itemVariants}
           >
             <ShieldCheckIcon className="size-3.5" />
-            <span>Secured by Clerk</span>
+            <span>256-bit SSL encrypted</span>
           </motion.div>
         </motion.div>
       </div>

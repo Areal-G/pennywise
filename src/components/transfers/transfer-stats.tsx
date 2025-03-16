@@ -2,17 +2,12 @@ import { ArrowUpRightIcon, ArrowDownLeftIcon, ClockIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import type { TransferRecord } from "@/data/seed"
+import { Money } from "@/components/money"
 
 interface TransferStatsProps {
   transfers: TransferRecord[]
 }
 
-const fmt = (n: number) =>
-  new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-  }).format(n)
 
 export function TransferStats({ transfers }: TransferStatsProps) {
   const totalSent = transfers
@@ -29,21 +24,25 @@ export function TransferStats({ transfers }: TransferStatsProps) {
   const cards = [
     {
       label: "Total Sent",
-      value: fmt(totalSent),
+      value: <Money value={totalSent} />,
       icon: ArrowUpRightIcon,
       color: "text-rose-500",
       bg: "bg-rose-500/10",
     },
     {
       label: "Total Received",
-      value: fmt(totalReceived),
+      value: <Money value={totalReceived} />,
       icon: ArrowDownLeftIcon,
       color: "text-emerald-500",
       bg: "bg-emerald-500/10",
     },
     {
       label: "Scheduled",
-      value: `${scheduled.length} (${fmt(scheduledTotal)})`,
+      value: (
+        <>
+          {scheduled.length} (<Money value={scheduledTotal} />)
+        </>
+      ),
       icon: ClockIcon,
       color: "text-amber-500",
       bg: "bg-amber-500/10",

@@ -6,6 +6,7 @@ import { Slider } from "@/components/ui/slider"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import type { CardData } from "@/data/seed"
+import { Money } from "@/components/money"
 
 interface CardControlsProps {
   card: CardData
@@ -15,14 +16,6 @@ interface CardControlsProps {
   onDailyLimitChange: (val: number) => void
 }
 
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value)
-}
 
 export function CardControls({
   card,
@@ -45,17 +38,18 @@ export function CardControls({
         {/* ── Freeze Toggle ── */}
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
-            <p className="text-sm font-medium">Card Status</p>
+            <p className="text-sm font-medium">Freeze card</p>
             <p
               className={cn(
                 "text-xs",
                 frozen ? "text-destructive" : "text-muted-foreground",
               )}
             >
-              {frozen ? "Frozen" : "Active"}
+              {frozen ? "Frozen: new payments are blocked" : "Active"}
             </p>
           </div>
           <Switch
+            aria-label="Freeze card"
             checked={frozen}
             onCheckedChange={(checked) => {
               if (checked !== frozen) onToggleFreeze()
@@ -68,7 +62,7 @@ export function CardControls({
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium">Daily Limit</p>
             <span className="text-sm font-medium tabular-nums">
-              {formatCurrency(dailyLimit)}
+              <Money value={dailyLimit} decimals={0} />
             </span>
           </div>
           <Slider
@@ -82,8 +76,8 @@ export function CardControls({
             }}
           />
           <div className="flex justify-between text-xs text-muted-foreground tabular-nums">
-            <span>$0</span>
-            <span>$10,000</span>
+            <span><Money value={0} decimals={0} /></span>
+            <span><Money value={10000} decimals={0} /></span>
           </div>
         </div>
 
@@ -109,8 +103,8 @@ export function CardControls({
             />
           </div>
           <div className="flex justify-between text-xs text-muted-foreground tabular-nums">
-            <span>{formatCurrency(card.monthlySpend)}</span>
-            <span>{formatCurrency(card.monthlyLimit)}</span>
+            <span><Money value={card.monthlySpend} decimals={0} /></span>
+            <span><Money value={card.monthlyLimit} decimals={0} /></span>
           </div>
         </div>
 

@@ -7,16 +7,12 @@ import {
 
 import { cn } from "@/lib/utils"
 import type { BankAccount } from "@/data/seed"
+import { Money } from "@/components/money"
 
 interface AccountSummaryProps {
   accounts: BankAccount[]
 }
 
-const fmt = (n: number, currency = "$") =>
-  `${currency}${new Intl.NumberFormat("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(Math.abs(n))}`
 
 export function AccountSummary({ accounts }: AccountSummaryProps) {
   const totalBalance = accounts.reduce((sum, a) => sum + a.balance, 0)
@@ -26,14 +22,14 @@ export function AccountSummary({ accounts }: AccountSummaryProps) {
   const cards = [
     {
       label: "Total Balance",
-      value: fmt(totalBalance),
+      value: <Money value={totalBalance} />,
       icon: WalletIcon,
       color: "text-primary",
       bg: "bg-primary/10",
     },
     {
       label: "Total Change",
-      value: `${isPositive ? "+" : "-"}${fmt(totalChange)}`,
+      value: <Money value={totalChange} sign />,
       icon: isPositive ? TrendingUpIcon : TrendingDownIcon,
       color: isPositive ? "text-emerald-500" : "text-rose-500",
       bg: isPositive ? "bg-emerald-500/10" : "bg-rose-500/10",

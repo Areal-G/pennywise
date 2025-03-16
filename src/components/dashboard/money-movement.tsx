@@ -23,21 +23,25 @@ import {
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
 import { moneyMovementByPeriod } from "@/data/seed"
 import { ArrowDownLeftIcon, ArrowUpRightIcon } from "lucide-react"
+import { Money, useChartAnimation } from "@/components/money"
+import { useMoney } from "@/lib/demo-store"
 
 const chartConfig = {
   moneyIn: {
     label: "Money In",
-    color: "var(--color-primary)",
+    color: "oklch(0.7 0.15 162)",
   },
   moneyOut: {
     label: "Money Out",
-    color: "var(--color-muted-foreground)",
+    color: "oklch(0.68 0.19 15)",
   },
 } satisfies ChartConfig
 
 type Period = keyof typeof moneyMovementByPeriod
 
 export function MoneyMovement() {
+  const { format } = useMoney()
+  const chartAnimation = useChartAnimation()
   const [period, setPeriod] = useState<Period>("7d")
   const data = moneyMovementByPeriod[period]
 
@@ -74,7 +78,7 @@ export function MoneyMovement() {
             <div>
               <p className="text-[10px] font-medium text-emerald-600/70 dark:text-emerald-400/70">Money In</p>
               <p className="text-sm font-bold tabular-nums text-emerald-700 dark:text-emerald-300">
-                ${totals.in.toLocaleString()}
+                <Money value={totals.in} decimals={0} />
               </p>
             </div>
           </div>
@@ -85,7 +89,7 @@ export function MoneyMovement() {
             <div>
               <p className="text-[10px] font-medium text-rose-600/70 dark:text-rose-400/70">Money Out</p>
               <p className="text-sm font-bold tabular-nums text-rose-700 dark:text-rose-300">
-                ${totals.out.toLocaleString()}
+                <Money value={totals.out} decimals={0} />
               </p>
             </div>
           </div>
@@ -95,7 +99,7 @@ export function MoneyMovement() {
         <div className="flex items-center justify-between rounded-lg border px-3 py-2">
           <span className="text-xs text-muted-foreground">Net Flow</span>
           <span className="text-sm font-bold tabular-nums text-emerald-600 dark:text-emerald-400">
-            +${totals.net.toLocaleString()}
+            <Money value={totals.net} decimals={0} sign />
           </span>
         </div>
 
@@ -103,7 +107,7 @@ export function MoneyMovement() {
         <ChartContainer config={chartConfig} className="h-[180px] w-full">
           <BarChart
             data={data}
-            margin={{ top: 4, right: 4, bottom: 0, left: -24 }}
+            margin={{ top: 4, right: 4, bottom: 0, left: -10 }}
             barGap={2}
           >
             <CartesianGrid
@@ -126,27 +130,29 @@ export function MoneyMovement() {
               fontSize={11}
               tickMargin={4}
               stroke="var(--color-muted-foreground)"
-              tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
+              tickFormatter={(v) => format(v, { compact: true })}
             />
             <ChartTooltip
               content={
                 <ChartTooltipContent
                   formatter={(value) =>
-                    `$${Number(value).toLocaleString()}`
+                    format(Number(value), { decimals: 0 })
                   }
                 />
               }
             />
             <Bar
+              {...chartAnimation}
               dataKey="moneyIn"
-              fill="var(--color-primary)"
+              fill="var(--color-moneyIn)"
               radius={[6, 6, 0, 0]}
               maxBarSize={24}
             />
             <Bar
+              {...chartAnimation}
               dataKey="moneyOut"
-              fill="var(--color-muted-foreground)"
-              fillOpacity={0.25}
+              fill="var(--color-moneyOut)"
+              fillOpacity={0.85}
               radius={[6, 6, 0, 0]}
               maxBarSize={24}
             />

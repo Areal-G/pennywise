@@ -9,7 +9,9 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart"
 import { Area, AreaChart, ReferenceLine, XAxis, YAxis } from "recharts"
-import { budgetCategories, dailySpending } from "@/data/seed"
+import { dailySpending } from "@/data/seed"
+import { useDemoStore, useMoney } from "@/lib/demo-store"
+import { useChartAnimation } from "@/components/money"
 import { AlertTriangleIcon, CheckCircle2Icon } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -21,24 +23,28 @@ const chartConfig = {
 } satisfies ChartConfig
 
 export function MonthProjection() {
+  const { budgets } = useDemoStore()
+  const { format } = useMoney()
+  const chartAnimation = useChartAnimation()
   const stats = useMemo(() => {
-    const totalBudget = budgetCategories.reduce((s, b) => s + b.budget, 0)
+    const totalBudget = budgets.reduce((s, b) => s + b.budget, 0)
+    const daysInMonth = dailySpending.length
     const spentDays = dailySpending.filter((d) => d.amount > 0)
     const totalSpent = spentDays.reduce((s, d) => s + d.amount, 0)
     const avgDaily = spentDays.length > 0 ? totalSpent / spentDays.length : 0
-    const daysLeft = 30 - spentDays.length
+    const daysLeft = daysInMonth - spentDays.length
     const projected = totalSpent + avgDaily * daysLeft
     const overBudget = projected > totalBudget
 
     // Build cumulative chart data
     const chartData = dailySpending.reduce<{ day: number; cumulative: number; budget: number }[]>((acc, d, i) => {
       const prevCumulative = i > 0 ? acc[i - 1].cumulative : 0
-      acc.push({ day: i + 1, cumulative: prevCumulative + d.amount, budget: (totalBudget / 30) * (i + 1) })
+      acc.push({ day: i + 1, cumulative: prevCumulative + d.amount, budget: (totalBudget / daysInMonth) * (i + 1) })
       return acc
     }, [])
 
     return { totalBudget, totalSpent, avgDaily, daysLeft, projected, overBudget, chartData }
-  }, [])
+  }, [budgets])
 
   return (
     <Card>
@@ -80,7 +86,7 @@ export function MonthProjection() {
               Avg/Day
             </p>
             <p className="text-lg font-bold tabular-nums">
-              ${Math.round(stats.avgDaily)}
+              {format(stats.avgDaily, { decimals: 0 })}
             </p>
           </div>
           <div>
@@ -88,7 +94,7 @@ export function MonthProjection() {
               Spent So Far
             </p>
             <p className="text-lg font-bold tabular-nums">
-              ${stats.totalSpent.toLocaleString()}
+              {format(stats.totalSpent, { decimals: 0 })}
             </p>
           </div>
           <div>
@@ -101,7 +107,7 @@ export function MonthProjection() {
                 stats.overBudget && "text-destructive"
               )}
             >
-              ${Math.round(stats.projected).toLocaleString()}
+              {format(stats.projected, { decimals: 0 })}
             </p>
           </div>
         </div>
@@ -110,7 +116,7 @@ export function MonthProjection() {
         <ChartContainer config={chartConfig} className="h-[140px] w-full">
           <AreaChart
             data={stats.chartData}
-            margin={{ top: 4, right: 4, bottom: 0, left: -24 }}
+            margin={{ top: 4, right: 4, bottom: 0, left: -10 }}
           >
             <defs>
               <linearGradient id="fillSpend" x1="0" y1="0" x2="0" y2="1">
@@ -132,12 +138,12 @@ export function MonthProjection() {
               fontSize={10}
               tickMargin={4}
               stroke="var(--color-muted-foreground)"
-              tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
+              tickFormatter={(v) => format(v, { compact: true })}
             />
             <ChartTooltip
               content={
                 <ChartTooltipContent
-                  formatter={(value) => `$${Number(value).toLocaleString()}`}
+                  formatter={(value) => format(Number(value), { decimals: 0 })}
                 />
               }
             />
@@ -155,6 +161,7 @@ export function MonthProjection() {
               strokeDasharray="4 4"
               fill="transparent"
               dot={false}
+              {...chartAnimation}
             />
             <Area
               dataKey="cumulative"
@@ -163,6 +170,7 @@ export function MonthProjection() {
               strokeWidth={2}
               fill="url(#fillSpend)"
               dot={false}
+              {...chartAnimation}
             />
           </AreaChart>
         </ChartContainer>

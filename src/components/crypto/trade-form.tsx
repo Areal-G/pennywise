@@ -1,14 +1,13 @@
 "use client"
 
 import * as React from "react"
-import { ArrowDownUpIcon, SettingsIcon, LoaderCircleIcon, CheckCircleIcon } from "lucide-react"
+import { ArrowDownUpIcon, LoaderCircleIcon, CheckCircleIcon } from "lucide-react"
 import { AnimatePresence, motion } from "motion/react"
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-  CardAction,
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -21,15 +20,17 @@ import {
 } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 import { cryptoCoins } from "@/data/seed"
-import type { CryptoPrices } from "./crypto-page-client"
+import type { CryptoPrices, TradeRequest } from "./crypto-page-client"
 
 const TABS = ["Exchange", "Trade", "Buy", "Sell"] as const
 
 interface TradeFormProps {
   prices: CryptoPrices
+  request?: TradeRequest
 }
 
-export function TradeForm({ prices }: TradeFormProps) {
+export function TradeForm({ prices, request }: TradeFormProps) {
+  const cardRef = React.useRef<HTMLDivElement>(null)
   const [activeTab, setActiveTab] = React.useState<string>("Trade")
   const [amount, setAmount] = React.useState("0.5")
   const [fromCoin, setFromCoin] = React.useState("eth")
@@ -89,6 +90,20 @@ export function TradeForm({ prices }: TradeFormProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab])
 
+  // Buy / Sell picked from a coin's menu: pre-fill the form and bring it into view
+  React.useEffect(() => {
+    if (!request) return
+    setActiveTab(request.side)
+    if (request.side === "Buy") {
+      setFromCoin("usd")
+      setToCoin(request.coin)
+    } else {
+      setFromCoin(request.coin)
+      setToCoin("usd")
+    }
+    cardRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
+  }, [request])
+
   function handleTrade() {
     const val = parseFloat(amount || "0")
     if (val <= 0) return
@@ -119,14 +134,9 @@ export function TradeForm({ prices }: TradeFormProps) {
   const receivedLabel = isBuyMode ? "You Receive" : isSellMode ? "You Receive (USD)" : "Received"
 
   return (
-    <Card className="lg:col-span-4">
+    <Card ref={cardRef} className="xl:col-span-4">
       <CardHeader>
         <CardTitle>Transaction</CardTitle>
-        <CardAction>
-          <Button variant="ghost" size="icon-xs">
-            <SettingsIcon className="size-4 text-muted-foreground" />
-          </Button>
-        </CardAction>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* tab bar */}
@@ -185,6 +195,7 @@ export function TradeForm({ prices }: TradeFormProps) {
               size="icon"
               className="rounded-full"
               onClick={handleSwap}
+              aria-label="Swap currencies"
               disabled={loading || success}
             >
               <ArrowDownUpIcon className="size-4" />

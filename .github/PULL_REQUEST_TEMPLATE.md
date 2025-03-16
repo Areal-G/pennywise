@@ -13,7 +13,6 @@
 
 ## Checklist
 
-- [ ] I have read the [Contributing Guide](https://github.com/areal/pennywise/blob/main/.github/CONTRIBUTING.md)
 - [ ] My code passes `pnpm lint` with no errors
 - [ ] My code passes `pnpm build` with no errors
 - [ ] I have added screenshots for visual changes

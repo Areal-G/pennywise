@@ -7,6 +7,7 @@ import {
 import { Progress } from "@/components/ui/progress"
 import { spendingLimit } from "@/data/seed"
 import { ShieldCheckIcon } from "lucide-react"
+import { Money } from "@/components/money"
 
 export function SpendingLimit() {
   const percentUsed = Math.round(
@@ -27,10 +28,8 @@ export function SpendingLimit() {
         <div>
           <p className="text-xs text-muted-foreground">Budget</p>
           <p className="text-2xl font-bold tabular-nums tracking-tight">
-            ${spendingLimit.budget.toLocaleString()}{" "}
-            <span className="text-sm font-normal text-muted-foreground">
-              {spendingLimit.currency}
-            </span>
+            <Money value={spendingLimit.budget} decimals={0} />{" "}
+            <span className="text-sm font-normal text-muted-foreground">/ month</span>
           </p>
         </div>
 
@@ -40,13 +39,13 @@ export function SpendingLimit() {
           <div>
             <p className="text-xs text-muted-foreground">Spend</p>
             <p className="font-semibold tabular-nums">
-              ${spendingLimit.spent.toLocaleString()}
+              <Money value={spendingLimit.spent} decimals={0} />
             </p>
           </div>
           <div className="text-right">
             <p className="text-xs text-muted-foreground">Remaining</p>
             <p className="font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">
-              ${spendingLimit.remaining.toLocaleString()}
+              <Money value={spendingLimit.remaining} decimals={0} />
             </p>
           </div>
         </div>

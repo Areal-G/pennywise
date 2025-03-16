@@ -22,6 +22,7 @@ import {
 import { cn } from "@/lib/utils"
 import { cryptoCoins } from "@/data/seed"
 import type { CryptoPrices } from "./crypto-page-client"
+import { Money } from "@/components/money"
 
 const COLORS = [
   "bg-blue-500",
@@ -36,9 +37,10 @@ interface MyPortfolioProps {
   originalPrices: CryptoPrices
   selectedCoin: string
   onSelectCoin: (id: string) => void
+  onTrade: (side: "Buy" | "Sell", coin: string) => void
 }
 
-export function MyPortfolio({ prices, originalPrices, selectedCoin, onSelectCoin }: MyPortfolioProps) {
+export function MyPortfolio({ prices, originalPrices, selectedCoin, onSelectCoin, onTrade }: MyPortfolioProps) {
   const top3 = cryptoCoins.slice(0, 3)
 
   const total = top3.reduce((s, c) => s + c.holdings * (prices[c.id] ?? c.price), 0)
@@ -61,7 +63,7 @@ export function MyPortfolio({ prices, originalPrices, selectedCoin, onSelectCoin
   })
 
   return (
-    <Card className="lg:col-span-4">
+    <Card className="xl:col-span-4">
       <CardHeader>
         <div className="flex items-center gap-2">
           <CardTitle>My Portfolio</CardTitle>
@@ -127,20 +129,16 @@ export function MyPortfolio({ prices, originalPrices, selectedCoin, onSelectCoin
                   className="size-8 rounded-full"
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium leading-tight">
+                  <p className="truncate text-sm font-medium leading-tight">
                     {seg.coin.name}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {seg.coin.symbol}
                   </p>
                 </div>
-                <div className="text-right">
+                <div className="shrink-0 text-right">
                   <p className="text-sm font-semibold tabular-nums">
-                    $
-                    {seg.value.toLocaleString("en-US", {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
+                    <Money value={seg.value} />
                   </p>
                   <span
                     className={cn(
@@ -159,15 +157,16 @@ export function MyPortfolio({ prices, originalPrices, selectedCoin, onSelectCoin
                     render={<Button
                       variant="ghost"
                       size="icon-xs"
-                      className="opacity-0 transition-opacity group-hover/row:opacity-100"
+                      aria-label={`${seg.coin.name} actions`}
+                      className="opacity-0 transition-opacity group-hover/row:opacity-100 focus-visible:opacity-100 aria-expanded:opacity-100 pointer-coarse:opacity-100"
                     />}
                   >
                     <MoreHorizontalIcon className="size-4" />
                   </DropdownMenuTrigger>
                   <DropdownMenuContent side="bottom" align="end">
-                    <DropdownMenuItem>Buy More</DropdownMenuItem>
-                    <DropdownMenuItem>Sell</DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => onSelectCoin(seg.coin.id)}>View Chart</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onTrade("Buy", seg.coin.id)}>Buy More</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onTrade("Sell", seg.coin.id)}>Sell</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onSelectCoin(seg.coin.id)}>View Chart</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>

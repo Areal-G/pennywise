@@ -1,11 +1,13 @@
 "use client"
 
+import { useState } from "react"
 import Image from "next/image"
-import { TrendingUpIcon, TrendingDownIcon, ClockIcon } from "lucide-react"
+import { TrendingUpIcon, TrendingDownIcon, ClockIcon, BuildingIcon } from "lucide-react"
 import { motion } from "motion/react"
 
 import { cn } from "@/lib/utils"
 import type { BankAccount } from "@/data/seed"
+import { Money } from "@/components/money"
 
 interface AccountCardProps {
   account: BankAccount
@@ -13,22 +15,22 @@ interface AccountCardProps {
   onSelect?: (account: BankAccount) => void
 }
 
-const fmt = (n: number, currency = "$") =>
+// Accounts held in dollars follow the display currency; others keep their own
+const fmtNative = (n: number, currency: string) =>
   `${currency}${new Intl.NumberFormat("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(Math.abs(n))}`
 
 export function AccountCard({ account, index, onSelect }: AccountCardProps) {
+  const [imgError, setImgError] = useState(false)
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: index * 0.05 }}
-      onClick={() => {
-        onSelect?.(account)
-        console.log("Selected account:", account.name)
-      }}
+      onClick={() => onSelect?.(account)}
       className="group relative cursor-pointer overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10 transition-shadow hover:shadow-md"
     >
       {/* Colored left border */}
@@ -42,14 +44,21 @@ export function AccountCard({ account, index, onSelect }: AccountCardProps) {
       <div className="p-4 pl-5">
         {/* Institution row */}
         <div className="flex items-center gap-2">
-          <Image
-            src={account.institutionLogo}
-            alt={account.institution}
-            width={32}
-            height={32}
-            unoptimized
-            className="size-8 rounded-full bg-muted object-cover"
-          />
+          {imgError ? (
+            <div className="flex size-8 items-center justify-center rounded-full bg-muted">
+              <BuildingIcon className="size-4 text-muted-foreground" />
+            </div>
+          ) : (
+            <Image
+              src={account.institutionLogo}
+              alt={account.institution}
+              width={32}
+              height={32}
+              unoptimized
+              className="size-8 rounded-full bg-muted object-cover"
+              onError={() => setImgError(true)}
+            />
+          )}
           <span className="text-xs text-muted-foreground">
             {account.institution}
           </span>
@@ -65,7 +74,11 @@ export function AccountCard({ account, index, onSelect }: AccountCardProps) {
 
         {/* Balance */}
         <p className="mt-3 tabular-nums text-xl font-bold tracking-tight">
-          {fmt(account.balance, account.currency)}
+          {account.currency === "$" ? (
+            <Money value={Math.abs(account.balance)} />
+          ) : (
+            fmtNative(account.balance, account.currency)
+          )}
         </p>
 
         {/* Change badge + last activity */}
@@ -85,7 +98,11 @@ export function AccountCard({ account, index, onSelect }: AccountCardProps) {
             )}
             <span className="tabular-nums">
               {account.change >= 0 ? "+" : "-"}
-              {fmt(account.change, account.currency)}{" "}
+              {account.currency === "$" ? (
+                <Money value={Math.abs(account.change)} />
+              ) : (
+                fmtNative(account.change, account.currency)
+              )}{" "}
               ({Math.abs(account.changePercent).toFixed(1)}%)
             </span>
           </span>

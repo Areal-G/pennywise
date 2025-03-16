@@ -11,8 +11,16 @@ import { cryptoCoins } from "@/data/seed"
 
 export type CryptoPrices = Record<string, number>
 
+/** Pre-fills the trade form (from the Buy / Sell menu items) */
+export type TradeRequest = { side: "Buy" | "Sell"; coin: string; id: number }
+
 export function CryptoPageClient() {
   const [selectedCoin, setSelectedCoin] = React.useState("btc")
+  const [tradeRequest, setTradeRequest] = React.useState<TradeRequest>()
+  const requestTrade = React.useCallback(
+    (side: TradeRequest["side"], coin: string) => setTradeRequest({ side, coin, id: Date.now() }),
+    []
+  )
 
   // Build initial prices from seed data
   const [prices, setPrices] = React.useState<CryptoPrices>(() => {
@@ -49,7 +57,7 @@ export function CryptoPageClient() {
   }, [])
 
   return (
-    <div className="grid gap-4 px-4 pb-6 lg:grid-cols-12">
+    <div className="grid gap-4 px-4 pb-6 xl:grid-cols-12">
       {/* Row 1 */}
       <MyBalance prices={prices} />
       <TopCoins
@@ -65,6 +73,7 @@ export function CryptoPageClient() {
         originalPrices={originalPrices}
         selectedCoin={selectedCoin}
         onSelectCoin={setSelectedCoin}
+        onTrade={requestTrade}
       />
       <CoinInsight
         prices={prices}
@@ -72,12 +81,13 @@ export function CryptoPageClient() {
       />
 
       {/* Row 3 */}
-      <TradeForm prices={prices} />
+      <TradeForm prices={prices} request={tradeRequest} />
       <MarketOverview
         prices={prices}
         originalPrices={originalPrices}
         selectedCoin={selectedCoin}
         onSelectCoin={setSelectedCoin}
+        onTrade={requestTrade}
       />
     </div>
   )

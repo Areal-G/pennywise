@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef } from "react"
+import Link from "next/link"
 import {
   Card,
   CardContent,
@@ -18,10 +19,14 @@ import {
   CheckCircle2Icon,
 } from "lucide-react"
 import { motion, AnimatePresence } from "motion/react"
+import { Money } from "@/components/money"
+import { useMoney } from "@/lib/demo-store"
+import { convertToUsd } from "@/lib/currency"
 
 type SendState = "idle" | "sending" | "success"
 
 export function QuickTransfer() {
+  const { symbol, currency } = useMoney()
   const [selectedContact, setSelectedContact] = useState(contacts[0].id)
   const [amount, setAmount] = useState("250.00")
   const [sendState, setSendState] = useState<SendState>("idle")
@@ -47,7 +52,13 @@ export function QuickTransfer() {
         <CardTitle className="text-base font-semibold">
           Quick Transfer
         </CardTitle>
-        <Button variant="ghost" size="sm" className="h-auto gap-1 px-0 text-xs text-muted-foreground">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-auto gap-1 px-0 text-xs text-muted-foreground"
+          nativeButton={false}
+          render={<Link href="/transfers" />}
+        >
           See All Contacts
           <ChevronRightIcon className="size-3" />
         </Button>
@@ -95,6 +106,9 @@ export function QuickTransfer() {
             variant="outline"
             size="icon"
             className="size-10 shrink-0 rounded-full"
+            aria-label="All contacts"
+            nativeButton={false}
+            render={<Link href="/transfers" />}
           >
             <ChevronRightIcon className="size-4" />
           </Button>
@@ -135,7 +149,7 @@ export function QuickTransfer() {
                 <CheckCircle2Icon className="size-10 text-emerald-500" />
               </motion.div>
               <p className="text-sm font-semibold">
-                ${parseFloat(amount).toLocaleString("en-US", { minimumFractionDigits: 2 })} sent!
+                <Money value={convertToUsd(parseFloat(amount), currency)} /> sent!
               </p>
               <p className="text-xs text-muted-foreground">
                 To {selected?.name}
@@ -149,14 +163,16 @@ export function QuickTransfer() {
               exit={{ opacity: 0 }}
               className="flex items-end gap-3"
             >
-              <div className="flex-1 space-y-1.5">
-                <label className="text-xs text-muted-foreground">Amount</label>
+              <div className="min-w-0 flex-1 space-y-1.5">
+                <label htmlFor="quick-transfer-amount" className="text-xs text-muted-foreground">Amount</label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground">
-                    $
+                    {symbol}
                   </span>
                   <Input
+                    id="quick-transfer-amount"
                     type="text"
+                    inputMode="decimal"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
                     disabled={sendState === "sending"}
@@ -165,7 +181,7 @@ export function QuickTransfer() {
                 </div>
               </div>
               <Button
-                className="h-10 gap-2 px-6"
+                className="h-10 shrink-0 gap-2 px-4"
                 disabled={sendState === "sending"}
                 onClick={handleSend}
               >

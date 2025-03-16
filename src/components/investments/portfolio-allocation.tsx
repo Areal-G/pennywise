@@ -13,6 +13,8 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart"
 import { holdings } from "@/data/seed"
+import { useChartAnimation } from "@/components/money"
+import { useMoney } from "@/lib/demo-store"
 
 const SECTOR_COLORS = [
   "var(--color-chart-1)",
@@ -23,6 +25,8 @@ const SECTOR_COLORS = [
 ]
 
 export function PortfolioAllocation() {
+  const chartAnimation = useChartAnimation()
+  const { format } = useMoney()
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
 
   const { sectorData, totalValue } = useMemo(() => {
@@ -77,6 +81,7 @@ export function PortfolioAllocation() {
         >
           <PieChart>
             <Pie
+              {...chartAnimation}
               data={sectorData}
               dataKey="value"
               nameKey="name"
@@ -115,7 +120,7 @@ export function PortfolioAllocation() {
               dominantBaseline="middle"
               className="fill-foreground text-xl font-bold tabular-nums"
             >
-              ${centerLabel.value.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+              {format(centerLabel.value, { decimals: 0 })}
             </text>
             {centerLabel.pct && (
               <text

@@ -12,17 +12,16 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import type { CardData } from "@/data/seed"
+import { createCard } from "@/lib/cards-store"
+import { CARD_THEMES, type CardTheme } from "@/lib/card-themes"
+import { useProfile } from "@/lib/profile"
+import { cn } from "@/lib/utils"
+import { PaymentCard } from "@/components/cards/card-art"
 
 type Step = "idle" | "form" | "loading" | "success"
 
 interface VirtualCardGeneratorProps {
   onCardCreated: (card: CardData) => void
-}
-
-function randomDigits(n: number): string {
-  return Array.from({ length: n }, () => Math.floor(Math.random() * 10)).join(
-    "",
-  )
 }
 
 export function VirtualCardGenerator({
@@ -31,13 +30,16 @@ export function VirtualCardGenerator({
   const [step, setStep] = useState<Step>("idle")
   const [name, setName] = useState("")
   const [limit, setLimit] = useState("")
+  const [theme, setTheme] = useState<CardTheme>("sunset")
   const [newCard, setNewCard] = useState<CardData | null>(null)
   const [copied, setCopied] = useState(false)
+  const holder = useProfile().name.toUpperCase()
 
   const reset = useCallback(() => {
     setStep("idle")
     setName("")
     setLimit("")
+    setTheme("sunset")
     setNewCard(null)
     setCopied(false)
   }, [])
@@ -46,23 +48,12 @@ export function VirtualCardGenerator({
     if (!name.trim()) return
     setStep("loading")
 
-    const last4 = randomDigits(4)
-    const card: CardData = {
-      id: `vc-${Date.now()}`,
+    const card = createCard({
       name: name.trim(),
       type: "virtual",
-      last4,
-      cardNumber: `${randomDigits(4)} ${randomDigits(4)} ${randomDigits(4)} ${last4}`,
-      holder: "ALEX MORGAN",
-      expiry: `${String(Math.floor(Math.random() * 12) + 1).padStart(2, "0")}/${String(new Date().getFullYear() + 3).slice(-2)}`,
-      cvv: randomDigits(3),
-      network: Math.random() > 0.5 ? "visa" : "mastercard",
-      frozen: false,
-      dailyLimit: 1000,
-      monthlySpend: 0,
-      monthlyLimit: Number(limit) || 3000,
-      color: "bg-muted text-foreground",
-    }
+      theme,
+      monthlyLimit: Number(limit) || undefined,
+    })
 
     setTimeout(() => {
       setNewCard(card)
@@ -71,9 +62,9 @@ export function VirtualCardGenerator({
 
       setTimeout(() => {
         reset()
-      }, 4000)
+      }, 6000)
     }, 1200)
-  }, [name, limit, onCardCreated, reset])
+  }, [name, limit, theme, onCardCreated, reset])
 
   const handleCopy = useCallback(() => {
     if (!newCard) return
@@ -137,6 +128,27 @@ export function VirtualCardGenerator({
                   onChange={(e) => setLimit(e.target.value)}
                 />
               </div>
+              <div className="space-y-1.5">
+                <p className="text-xs font-medium text-muted-foreground">Colour</p>
+                <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Card colour">
+                  {(Object.keys(CARD_THEMES) as CardTheme[]).map((t) => (
+                    <button
+                      key={t}
+                      type="button"
+                      role="radio"
+                      aria-checked={theme === t}
+                      aria-label={CARD_THEMES[t].label}
+                      title={CARD_THEMES[t].label}
+                      onClick={() => setTheme(t)}
+                      className={cn(
+                        "h-6 w-9 rounded-md ring-offset-2 ring-offset-card transition-shadow",
+                        CARD_THEMES[t].className,
+                        theme === t ? "ring-2 ring-primary" : "hover:ring-2 hover:ring-border"
+                      )}
+                    />
+                  ))}
+                </div>
+              </div>
               <div className="flex gap-2 pt-1">
                 <Button
                   variant="outline"
@@ -186,6 +198,7 @@ export function VirtualCardGenerator({
               exit={{ opacity: 0, y: -8 }}
               className="space-y-3"
             >
+              <PaymentCard card={newCard} holder={holder} className="mx-auto max-w-[300px]" />
               <div className="rounded-lg bg-muted/50 p-3">
                 <p className="mb-1 text-xs text-muted-foreground">
                   Card Number

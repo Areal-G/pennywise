@@ -1,10 +1,8 @@
 "use client"
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar"
+import Link from "next/link"
+import { UserAvatar } from "@/components/user-avatar"
+import { useProfile } from "@/lib/profile"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,18 +18,11 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { ChevronsUpDownIcon, SparklesIcon, BadgeCheckIcon, CreditCardIcon, LogOutIcon } from "lucide-react"
+import { ChevronsUpDownIcon, SparklesIcon, BadgeCheckIcon, CreditCardIcon, LogOutIcon, UserRoundIcon } from "lucide-react"
 
-export function NavUser({
-  user,
-}: {
-  user: {
-    name: string
-    email: string
-    avatar: string
-  }
-}) {
+export function NavUser() {
   const { isMobile } = useSidebar()
+  const user = useProfile()
 
   return (
     <SidebarMenu>
@@ -42,10 +33,7 @@ export function NavUser({
               <SidebarMenuButton size="lg" className="aria-expanded:bg-muted" />
             }
           >
-            <Avatar>
-              <AvatarImage src={user.avatar} alt={user.name} />
-              <AvatarFallback>AG</AvatarFallback>
-            </Avatar>
+            <UserAvatar />
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span className="truncate font-medium">{user.name}</span>
               <span className="truncate text-xs">{user.email}</span>
@@ -61,20 +49,23 @@ export function NavUser({
             <DropdownMenuGroup>
               <DropdownMenuLabel className="p-0 font-normal">
                 <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                  <Avatar>
-                    <AvatarImage src={user.avatar} alt={user.name} />
-                    <AvatarFallback>AG</AvatarFallback>
-                  </Avatar>
+                  <UserAvatar className="size-9" />
                   <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-medium">{user.name}</span>
-                    <span className="truncate text-xs">{user.email}</span>
+                    <span className="flex items-center gap-1 truncate font-medium">
+                      {user.name}
+                      <BadgeCheckIcon className="size-3.5 shrink-0 text-primary" aria-label="Verified" />
+                    </span>
+                    <span className="truncate text-xs text-muted-foreground">{user.email}</span>
+                    <span className="truncate text-xs text-muted-foreground">
+                      {user.occupation} · {user.location}
+                    </span>
                   </div>
                 </div>
               </DropdownMenuLabel>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem render={<Link href="/settings?tab=billing" />}>
                 <SparklesIcon
                 />
                 Upgrade to Pro
@@ -82,19 +73,18 @@ export function NavUser({
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem render={<a href="/settings" />}>
-                <BadgeCheckIcon
-                />
-                Account
+              <DropdownMenuItem render={<Link href="/settings?tab=profile" />}>
+                <UserRoundIcon />
+                Profile
               </DropdownMenuItem>
-              <DropdownMenuItem render={<a href="/settings?tab=billing" />}>
+              <DropdownMenuItem render={<Link href="/settings?tab=billing" />}>
                 <CreditCardIcon
                 />
                 Billing
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem render={<a href="/sign-in" />}>
+            <DropdownMenuItem render={<Link href="/sign-in" />}>
               <LogOutIcon
               />
               Log out

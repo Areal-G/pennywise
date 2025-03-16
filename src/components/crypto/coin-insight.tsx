@@ -10,24 +10,23 @@ import {
   CartesianGrid,
   ReferenceLine,
 } from "recharts"
-import { ArrowRightIcon } from "lucide-react"
 import { motion, AnimatePresence } from "motion/react"
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-  CardAction,
 } from "@/components/ui/card"
 import {
   ChartContainer,
   ChartTooltip,
   type ChartConfig,
 } from "@/components/ui/chart"
-import { Button } from "@/components/ui/button"
+import { isoDay, seededRandom, today } from "@/lib/mock"
 import { cn } from "@/lib/utils"
 import { cryptoCoins } from "@/data/seed"
 import type { CryptoPrices } from "./crypto-page-client"
+import { Money, useChartAnimation } from "@/components/money"
 
 /* ── candlestick data generator ───────────────────────────────────────── */
 
@@ -41,7 +40,8 @@ interface CandlestickData {
 function generateCandlestickData(basePrice: number, count: number): CandlestickData[] {
   const data: CandlestickData[] = []
   let price = basePrice * 0.92
-  const now = new Date()
+  const now = today
+  const random = seededRandom(Math.round(basePrice * 100) + count)
   // Use enough decimal precision so small-price coins have visible candles
   const decimals = basePrice >= 100 ? 2 : basePrice >= 1 ? 4 : 6
   const factor = Math.pow(10, decimals)
@@ -54,13 +54,13 @@ function generateCandlestickData(basePrice: number, count: number): CandlestickD
 
     const volatility = price * 0.025
     const open = price
-    const change = (Math.random() - 0.45) * volatility
+    const change = (random() - 0.45) * volatility
     const close = open + change
-    const high = Math.max(open, close) + Math.random() * volatility * 0.4
-    const low = Math.min(open, close) - Math.random() * volatility * 0.4
+    const high = Math.max(open, close) + random() * volatility * 0.4
+    const low = Math.min(open, close) - random() * volatility * 0.4
 
     data.push({
-      date: date.toISOString().split("T")[0],
+      date: isoDay(date),
       openClose: [round(open), round(close)],
       high: round(high),
       low: round(low),
@@ -110,12 +110,12 @@ function CandlestickShape(props: CandlestickProps) {
   )
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function renderCandlestick(props: any) {
-  const { x, y, width, height, payload } = props as {
-    x: number; y: number; width: number; height: number
-    payload?: CandlestickData
-  }
+type CandlestickShapeProps = {
+  x?: number; y?: number; width?: number; height?: number
+  payload?: CandlestickData
+}
+
+function renderCandlestick({ x = 0, y = 0, width = 0, height = 0, payload }: CandlestickShapeProps) {
   if (payload?.openClose) {
     return (
       <CandlestickShape
@@ -171,6 +171,7 @@ interface CoinInsightProps {
 }
 
 export function CoinInsight({ prices, selectedCoin }: CoinInsightProps) {
+  const chartAnimation = useChartAnimation()
   const [period, setPeriod] = React.useState<string>("3M")
 
   const coin = cryptoCoins.find((c) => c.id === selectedCoin)
@@ -203,24 +204,19 @@ export function CoinInsight({ prices, selectedCoin }: CoinInsightProps) {
   }
 
   return (
-    <Card className="lg:col-span-8">
+    <Card className="xl:col-span-8">
       <CardHeader>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <CardTitle>{coin?.name ?? "Coin"} Insight</CardTitle>
           <span className={cn(
             "rounded px-2 py-0.5 text-sm font-bold tabular-nums",
             lastIsGrowing ? "text-emerald-500" : "text-rose-500"
           )}>
-            ${livePrice.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            <Money value={livePrice} />
           </span>
         </div>
-        <CardAction>
-          <Button variant="ghost" size="sm" className="gap-1 text-xs text-muted-foreground">
-            More Insight <ArrowRightIcon className="size-3" />
-          </Button>
-        </CardAction>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="min-w-0 space-y-4">
         {/* Legend */}
         <div className="flex items-center gap-4 text-xs text-muted-foreground">
           <span className="flex items-center gap-1.5">
@@ -284,7 +280,7 @@ export function CoinInsight({ prices, selectedCoin }: CoinInsightProps) {
                   />
                 )}
                 <ChartTooltip content={<CandlestickTooltip />} />
-                <Bar dataKey="openClose" shape={renderCandlestick}>
+                <Bar dataKey="openClose" shape={renderCandlestick} {...chartAnimation}>
                   {data.map((d) => (
                     <Cell key={d.date} />
                   ))}
@@ -295,7 +291,7 @@ export function CoinInsight({ prices, selectedCoin }: CoinInsightProps) {
         </AnimatePresence>
 
         {/* Period pills */}
-        <div className="flex items-center gap-1">
+        <div className="flex flex-wrap items-center gap-1">
           {PERIODS.map((p) => (
             <button
               key={p}

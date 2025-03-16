@@ -1,17 +1,21 @@
 "use client"
 
-import Image from "next/image"
 import { AnimatePresence, motion } from "motion/react"
+import { EmptyState } from "@/components/empty-state"
 import {
   CreditCardIcon,
   FileTextIcon,
   InfoIcon,
   MoreHorizontalIcon,
+  PencilIcon,
   StickyNoteIcon,
 } from "lucide-react"
 
+import { toast } from "@/components/ui/toaster"
 import { cn } from "@/lib/utils"
 import type { FullTransaction } from "@/data/seed"
+import { useMoney } from "@/lib/demo-store"
+import { MerchantLogo } from "@/components/merchant-logo"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -29,14 +33,11 @@ interface TransactionTableProps {
   setSelectedIds: (ids: Set<string>) => void
   expandedId: string | null
   setExpandedId: (id: string | null) => void
+  onEdit: (tx: FullTransaction) => void
+  hasFilters: boolean
+  onClearFilters: () => void
+  onAdd: () => void
 }
-
-const fmt = (n: number) =>
-  new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-  }).format(Math.abs(n))
 
 function statusBadge(status: FullTransaction["status"]) {
   switch (status) {
@@ -59,6 +60,10 @@ export function TransactionTable({
   setSelectedIds,
   expandedId,
   setExpandedId,
+  onEdit,
+  hasFilters,
+  onClearFilters,
+  onAdd,
 }: TransactionTableProps) {
   const allSelected =
     transactions.length > 0 && transactions.every((t) => selectedIds.has(t.id))
@@ -86,6 +91,7 @@ export function TransactionTable({
 
   return (
     <div className="overflow-hidden rounded-xl ring-1 ring-foreground/10">
+      <div className="overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
@@ -97,6 +103,7 @@ export function TransactionTable({
                   if (el) el.indeterminate = someSelected
                 }}
                 onChange={toggleAll}
+                aria-label="Select all transactions"
                 className="size-4 cursor-pointer rounded accent-primary"
               />
             </TableHead>
@@ -112,11 +119,23 @@ export function TransactionTable({
         <TableBody>
           {transactions.length === 0 && (
             <TableRow>
-              <TableCell
-                colSpan={7}
-                className="h-32 text-center text-muted-foreground"
-              >
-                No transactions found.
+              <TableCell colSpan={7}>
+                {hasFilters ? (
+                  <EmptyState
+                    variant="filter"
+                    className="py-12"
+                    actionLabel="Clear filters"
+                    onAction={onClearFilters}
+                  />
+                ) : (
+                  <EmptyState
+                    variant="transactions"
+                    className="py-12"
+                    description="Add your first transaction, or reset the demo data from Settings."
+                    actionLabel="Add transaction"
+                    onAction={onAdd}
+                  />
+                )}
               </TableCell>
             </TableRow>
           )}
@@ -130,6 +149,7 @@ export function TransactionTable({
                 isSelected={selectedIds.has(tx.id)}
                 isExpanded={isExpanded}
                 onToggleSelect={() => toggleOne(tx.id)}
+                onEdit={() => onEdit(tx)}
                 onToggleExpand={() =>
                   setExpandedId(isExpanded ? null : tx.id)
                 }
@@ -138,6 +158,7 @@ export function TransactionTable({
           })}
         </TableBody>
       </Table>
+      </div>
     </div>
   )
 }
@@ -148,13 +169,16 @@ function TransactionRow({
   isExpanded,
   onToggleSelect,
   onToggleExpand,
+  onEdit,
 }: {
   tx: FullTransaction
   isSelected: boolean
   isExpanded: boolean
   onToggleSelect: () => void
   onToggleExpand: () => void
+  onEdit: () => void
 }) {
+  const { format } = useMoney()
   return (
     <>
       <TableRow
@@ -171,21 +195,15 @@ function TransactionRow({
             checked={isSelected}
             onChange={onToggleSelect}
             onClick={(e) => e.stopPropagation()}
+            aria-label={`Select ${tx.merchant}`}
             className="size-4 cursor-pointer rounded accent-primary"
           />
         </TableCell>
 
-        <TableCell>
+        <TableCell className="w-full max-w-0">
           <div className="flex items-center gap-2.5">
-            <Image
-              src={tx.logo}
-              alt={tx.merchant}
-              width={32}
-              height={32}
-              className="size-8 rounded-lg object-cover"
-              unoptimized
-            />
-            <div className="min-w-0">
+            <MerchantLogo src={tx.logo} name={tx.merchant} />
+            <div className="min-w-0 [&>[data-slot=badge]]:max-w-full [&>[data-slot=badge]]:truncate">
               <p className="truncate text-sm font-medium">{tx.merchant}</p>
               <Badge variant="secondary" className="mt-0.5 text-[10px]">
                 {tx.category}
@@ -207,8 +225,8 @@ function TransactionRow({
               tx.type === "income" ? "text-emerald-500" : "text-foreground"
             )}
           >
-            {tx.type === "income" ? "+" : "-"}
-            {fmt(tx.amount)}
+            {tx.type === "income" ? "+" : "−"}
+            {format(Math.abs(tx.amount))}
           </span>
         </TableCell>
 
@@ -224,9 +242,12 @@ function TransactionRow({
           <Button
             variant="ghost"
             size="icon-xs"
-            className="opacity-0 transition-opacity group-hover:opacity-100"
+            aria-label={`${isExpanded ? "Hide" : "Show"} ${tx.merchant} details`}
+            aria-expanded={isExpanded}
+            className="opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 aria-expanded:opacity-100 pointer-coarse:opacity-100"
             onClick={(e) => {
               e.stopPropagation()
+              onToggleExpand()
             }}
           >
             <MoreHorizontalIcon className="size-4" />
@@ -270,7 +291,24 @@ function TransactionRow({
                     </div>
                   )}
 
-                  <Button variant="ghost" size="xs" className="ml-auto">
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    className="ml-auto"
+                    onClick={onEdit}
+                  >
+                    <PencilIcon className="size-3.5" />
+                    Edit
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    onClick={() =>
+                      toast("Receipt sent", {
+                        description: `${tx.merchant} receipt (${tx.transactionId}) was emailed to you.`,
+                      })
+                    }
+                  >
                     <FileTextIcon className="size-3.5" />
                     View Receipt
                   </Button>

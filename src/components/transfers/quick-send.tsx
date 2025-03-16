@@ -10,17 +10,21 @@ import {
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
-import { contacts } from "@/data/seed"
+import { contacts, type TransferRecord } from "@/data/seed"
 import {
   SendIcon,
   LoaderCircleIcon,
   CheckCircle2Icon,
 } from "lucide-react"
 import { motion, AnimatePresence } from "motion/react"
+import { Money } from "@/components/money"
+import { useMoney } from "@/lib/demo-store"
+import { convertToUsd } from "@/lib/currency"
 
 type SendState = "idle" | "sending" | "success"
 
-export function QuickSend() {
+export function QuickSend({ onSend }: { onSend?: (record: TransferRecord) => void }) {
+  const { symbol, currency } = useMoney()
   const [selectedContact, setSelectedContact] = useState(contacts[0].id)
   const [amount, setAmount] = useState("")
   const [note, setNote] = useState("")
@@ -34,6 +38,19 @@ export function QuickSend() {
 
     timeoutRef.current = setTimeout(() => {
       setSendState("success")
+      if (onSend && selected) {
+        const newRecord: TransferRecord = {
+          id: `tr-${Date.now()}`,
+          type: "sent",
+          contactName: selected.name,
+          contactAvatar: selected.avatar,
+          amount: Math.round(convertToUsd(parseFloat(amount), currency) * 100) / 100,
+          date: new Date().toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" }),
+          status: "completed",
+          note: note || undefined,
+        }
+        onSend(newRecord)
+      }
       timeoutRef.current = setTimeout(() => {
         setSendState("idle")
         setAmount("")
@@ -65,7 +82,7 @@ export function QuickSend() {
                 <CheckCircle2Icon className="size-10 text-emerald-500" />
               </motion.div>
               <p className="text-sm font-semibold">
-                ${parseFloat(amount).toLocaleString("en-US", { minimumFractionDigits: 2 })} sent!
+                <Money value={convertToUsd(parseFloat(amount), currency)} /> sent!
               </p>
               <p className="text-xs text-muted-foreground">
                 To {selected?.name}
@@ -80,9 +97,9 @@ export function QuickSend() {
               className="flex flex-col gap-4 lg:flex-row lg:items-end"
             >
               {/* Contact selector */}
-              <div className="space-y-1.5">
-                <label className="text-xs text-muted-foreground">To</label>
-                <div className="flex items-center gap-1">
+              <div>
+                <label className="mb-1.5 block text-xs text-muted-foreground">To</label>
+                <div className="flex items-center gap-1 pt-1">
                   {contacts.slice(0, 6).map((contact) => {
                     const isSelected = selectedContact === contact.id
                     return (
@@ -93,16 +110,16 @@ export function QuickSend() {
                         }}
                         className="relative shrink-0 rounded-full"
                         animate={{
-                          scale: isSelected ? 1.15 : 0.9,
+                          scale: isSelected ? 1 : 0.85,
                           opacity: isSelected ? 1 : 0.6,
                         }}
-                        whileHover={{ scale: isSelected ? 1.15 : 1, opacity: 1 }}
+                        whileHover={{ scale: isSelected ? 1 : 0.95, opacity: 1 }}
                         transition={{ type: "spring", stiffness: 400, damping: 25 }}
                       >
                         <Avatar
                           className={
                             isSelected
-                              ? "size-9 ring-2 ring-primary ring-offset-1 ring-offset-background"
+                              ? "size-9 ring-2 ring-primary"
                               : "size-8"
                           }
                         >
@@ -137,7 +154,7 @@ export function QuickSend() {
                 <label className="text-xs text-muted-foreground">Amount</label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground">
-                    $
+                    {symbol}
                   </span>
                   <Input
                     type="text"

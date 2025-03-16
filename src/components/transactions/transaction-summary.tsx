@@ -1,18 +1,14 @@
+"use client"
+
 import { ArrowDownLeftIcon, ArrowUpRightIcon, HashIcon, TrendingUpIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import type { FullTransaction } from "@/data/seed"
+import { Money } from "@/components/money"
 
 interface TransactionSummaryProps {
   transactions: FullTransaction[]
 }
-
-const fmt = (n: number) =>
-  new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-  }).format(n)
 
 export function TransactionSummary({ transactions }: TransactionSummaryProps) {
   const totalIn = transactions
@@ -32,28 +28,28 @@ export function TransactionSummary({ transactions }: TransactionSummaryProps) {
   const cards = [
     {
       label: "Total In",
-      value: fmt(totalIn),
+      value: <Money value={totalIn} />,
       icon: ArrowDownLeftIcon,
       color: "text-emerald-500",
       bg: "bg-emerald-500/10",
     },
     {
       label: "Total Out",
-      value: fmt(totalOut),
+      value: <Money value={totalOut} />,
       icon: ArrowUpRightIcon,
       color: "text-rose-500",
       bg: "bg-rose-500/10",
     },
     {
       label: "Largest",
-      value: largest ? fmt(Math.abs(largest.amount)) : "$0.00",
+      value: <Money value={largest ? Math.abs(largest.amount) : 0} />,
       icon: TrendingUpIcon,
       color: "text-primary",
       bg: "bg-primary/10",
     },
     {
       label: "Count",
-      value: transactions.length.toString(),
+      value: transactions.length.toLocaleString("en-US"),
       icon: HashIcon,
       color: "text-muted-foreground",
       bg: "bg-muted",

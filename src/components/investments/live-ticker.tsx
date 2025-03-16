@@ -3,6 +3,7 @@
 import { useMemo } from "react"
 import { cn } from "@/lib/utils"
 import { holdings, watchlistItems } from "@/data/seed"
+import { Money } from "@/components/money"
 
 type TickerEntry = {
   symbol: string
@@ -37,7 +38,7 @@ export function LiveTicker() {
       >
         <span className="font-medium">{e.symbol}</span>
         <span className="tabular-nums text-muted-foreground">
-          ${e.price.toFixed(2)}
+          <Money value={e.price} />
         </span>
         <span
           className={cn(

@@ -18,6 +18,8 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart"
 import { categoryBreakdowns } from "@/data/seed"
+import { Money, useChartAnimation } from "@/components/money"
+import { useMoney } from "@/lib/demo-store"
 
 const SUBCATEGORY_COLORS = [
   "var(--color-chart-1)",
@@ -28,6 +30,8 @@ const SUBCATEGORY_COLORS = [
 ]
 
 export function CategoryDonut() {
+  const { format } = useMoney()
+  const chartAnimation = useChartAnimation()
   const [selected, setSelected] = useState<string | null>(null)
 
   const total = useMemo(
@@ -118,12 +122,13 @@ export function CategoryDonut() {
                   content={
                     <ChartTooltipContent
                       formatter={(value) =>
-                        `$${Number(value).toLocaleString()}`
+                        format(Number(value), { decimals: 0 })
                       }
                     />
                   }
                 />
                 <Pie
+                  {...chartAnimation}
                   data={pieData}
                   dataKey="value"
                   nameKey="name"
@@ -153,7 +158,7 @@ export function CategoryDonut() {
                   dominantBaseline="middle"
                   className="fill-foreground text-2xl font-bold tabular-nums"
                 >
-                  ${centerAmount.toLocaleString()}
+                  {format(centerAmount, { decimals: 0 })}
                 </text>
                 <text
                   x="50%"
@@ -181,7 +186,7 @@ export function CategoryDonut() {
                 {entry.name}
               </span>
               <span className="ml-auto font-medium tabular-nums">
-                ${entry.value.toLocaleString()}
+                <Money value={entry.value} decimals={0} />
               </span>
             </div>
           ))}

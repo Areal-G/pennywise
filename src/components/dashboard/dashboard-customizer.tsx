@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useSyncExternalStore } from "react"
 import {
   DndContext,
   pointerWithin,
@@ -9,7 +9,7 @@ import {
   useSensor,
   useSensors,
   type DragStartEvent,
-  type DragOverEvent,
+  type DragEndEvent,
 } from "@dnd-kit/core"
 import {
   arrayMove,
@@ -25,6 +25,9 @@ import { QuickTransfer } from "@/components/dashboard/quick-transfer"
 import { SpendingLimit } from "@/components/dashboard/spending-limit"
 import { MoneyMovement } from "@/components/dashboard/money-movement"
 import { RecentTransactions } from "@/components/dashboard/recent-transactions"
+import { HealthScore } from "@/components/dashboard/health-score"
+import { InsightCards } from "@/components/dashboard/insight-cards"
+import { AskPennywiseWidget, UpcomingRenewalsWidget } from "@/components/dashboard/planning-widgets"
 
 type WidgetSize = "sm" | "lg" | "full"
 
@@ -36,11 +39,14 @@ type Block = {
 }
 
 const defaultBlocks: Block[] = [
+  { id: "insights", label: "Insights", size: "full", component: <InsightCards /> },
   { id: "financial-overview", label: "Financial Overview", size: "lg", component: <FinancialOverview /> },
-  { id: "account-cards", label: "Account Cards", size: "sm", component: <AccountCards /> },
-  { id: "quick-transfer", label: "Quick Transfer", size: "sm", component: <QuickTransfer /> },
-  { id: "spending-limit", label: "Spending Limit", size: "sm", component: <SpendingLimit /> },
+  { id: "account-cards", label: "My Cards", size: "sm", component: <AccountCards /> },
+  { id: "transfer-spending", label: "Transfer & Spending", size: "sm", component: <div className="flex flex-col gap-4 [&>*]:flex-1"><QuickTransfer /><SpendingLimit /></div> },
   { id: "money-movement", label: "Money Movement", size: "sm", component: <MoneyMovement /> },
+  { id: "health-score", label: "Financial Health", size: "sm", component: <HealthScore /> },
+  { id: "ask-pennywise", label: "Ask Pennywise", size: "lg", component: <AskPennywiseWidget /> },
+  { id: "upcoming-bills", label: "Upcoming Bills", size: "sm", component: <UpcomingRenewalsWidget /> },
   { id: "recent-transactions", label: "Recent Transactions", size: "full", component: <RecentTransactions /> },
 ]
 
@@ -50,7 +56,7 @@ const sizeClass: Record<WidgetSize, string> = {
   full: "col-span-12",
 }
 
-const STORAGE_KEY = "vault-dashboard-order"
+const STORAGE_KEY = "pennywise-dashboard-order"
 
 // ── Null strategy: let CSS Grid handle layout, not dnd-kit transforms ──
 const nullStrategy = () => null
@@ -87,34 +93,59 @@ function SortableWidget({
           {block.label}
         </div>
       )}
-      <div className={editing ? "pointer-events-none select-none" : undefined}>
+      <div className={cn("h-full [&>*]:h-full", editing && "pointer-events-none select-none")}>
         {block.component}
       </div>
     </div>
   )
 }
 
+function orderBlocks(saved: string | null): Block[] {
+  if (!saved) return defaultBlocks
+  try {
+    const order: unknown = JSON.parse(saved)
+    if (!Array.isArray(order)) return defaultBlocks
+    const reordered = order
+      .map((id) => defaultBlocks.find((b) => b.id === id))
+      .filter(Boolean) as Block[]
+    // Blocks added since the order was saved go back to their default position
+    const result = [...reordered]
+    defaultBlocks.forEach((b, i) => {
+      if (!result.includes(b)) result.splice(Math.min(i, result.length), 0, b)
+    })
+    return result
+  } catch {
+    return defaultBlocks
+  }
+}
+
+function readSavedOrder() {
+  try {
+    return localStorage.getItem(STORAGE_KEY)
+  } catch {
+    return null
+  }
+}
+
+function writeSavedOrder(value: string | null) {
+  try {
+    if (value === null) localStorage.removeItem(STORAGE_KEY)
+    else localStorage.setItem(STORAGE_KEY, value)
+  } catch {
+    // Storage unavailable: the layout still works for this visit
+  }
+}
+
+const noopSubscribe = () => () => {}
+
 export function DashboardCustomizer() {
   const [editing, setEditing] = useState(false)
-  const [blocks, setBlocks] = useState(() => {
-    if (typeof window === "undefined") return defaultBlocks
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY)
-      if (saved) {
-        const order: string[] = JSON.parse(saved)
-        const reordered = order
-          .map((id) => defaultBlocks.find((b) => b.id === id))
-          .filter(Boolean) as Block[]
-        for (const b of defaultBlocks) {
-          if (!reordered.find((r) => r.id === b.id)) reordered.push(b)
-        }
-        return reordered
-      }
-    } catch {}
-    return defaultBlocks
-  })
+  // Saved order is read after hydration (server and first client render use the default)
+  const savedOrder = useSyncExternalStore(noopSubscribe, readSavedOrder, () => null)
+  const [localBlocks, setLocalBlocks] = useState<Block[] | null>(null)
+  const blocks = localBlocks ?? orderBlocks(savedOrder)
+  const setBlocks = (update: (prev: Block[]) => Block[]) => setLocalBlocks(update(blocks))
   const [activeId, setActiveId] = useState<string | null>(null)
-  const snapshot = useRef<Block[]>([])
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
@@ -122,32 +153,29 @@ export function DashboardCustomizer() {
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string)
-    snapshot.current = [...blocks]
   }
 
-  const handleDragOver = (event: DragOverEvent) => {
+  const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event
+    setActiveId(null)
     if (!over || active.id === over.id) return
     setBlocks((prev) => {
       const oldIndex = prev.findIndex((b) => b.id === active.id)
       const newIndex = prev.findIndex((b) => b.id === over.id)
-      return arrayMove(prev, oldIndex, newIndex)
+      if (oldIndex === -1 || newIndex === -1) return prev
+      const next = arrayMove(prev, oldIndex, newIndex)
+      writeSavedOrder(JSON.stringify(next.map((b) => b.id)))
+      return next
     })
   }
 
-  const handleDragEnd = () => {
-    setActiveId(null)
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(blocks.map((b) => b.id)))
-  }
-
   const handleDragCancel = () => {
-    setBlocks(snapshot.current)
     setActiveId(null)
   }
 
   const handleReset = () => {
-    setBlocks(defaultBlocks)
-    localStorage.removeItem(STORAGE_KEY)
+    setLocalBlocks(defaultBlocks)
+    writeSavedOrder(null)
   }
 
   const activeBlock = blocks.find((b) => b.id === activeId)
@@ -190,7 +218,6 @@ export function DashboardCustomizer() {
         sensors={sensors}
         collisionDetection={pointerWithin}
         onDragStart={handleDragStart}
-        onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
         onDragCancel={handleDragCancel}
       >

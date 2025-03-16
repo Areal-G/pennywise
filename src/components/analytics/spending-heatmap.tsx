@@ -15,6 +15,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { spendingHeatmapData } from "@/data/seed"
+import { Money } from "@/components/money"
 
 const DAY_LABELS = ["", "Mon", "", "Wed", "", "Fri", ""]
 const CELL_SIZE = 13
@@ -76,12 +77,12 @@ export function SpendingHeatmap() {
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <CardTitle>Spending Activity</CardTitle>
             <CardDescription>
               <span className="tabular-nums font-medium text-foreground">
-                ${yearTotal.toLocaleString()}
+                <Money value={yearTotal} decimals={0} />
               </span>{" "}
               total spent this year
             </CardDescription>
@@ -149,7 +150,7 @@ export function SpendingHeatmap() {
                   />
                   <TooltipContent>
                     <span className="tabular-nums">
-                      ${cell.amount.toLocaleString()}
+                      <Money value={cell.amount} decimals={0} />
                     </span>{" "}
                     on{" "}
                     {new Date(cell.date + "T12:00:00").toLocaleDateString(

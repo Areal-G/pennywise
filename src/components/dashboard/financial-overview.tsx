@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { format } from "date-fns"
+import { endOfMonth, format, startOfYear } from "date-fns"
 import {
   Card,
   CardContent,
@@ -24,8 +24,11 @@ import {
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis, type DotProps } from "recharts"
 import { financialOverview } from "@/data/seed"
 import { CalendarIcon } from "lucide-react"
+import { today } from "@/lib/mock"
 import { cn } from "@/lib/utils"
 import type { DateRange } from "react-day-picker"
+import { Money, useChartAnimation } from "@/components/money"
+import { useMoney } from "@/lib/demo-store"
 
 function SquareDot({ cx, cy, fill, opacity = 1, size = 6 }: DotProps & { size?: number; opacity?: number }) {
   if (cx == null || cy == null) return null
@@ -49,7 +52,7 @@ const chartConfig = {
   },
   lastYear: {
     label: "Last Year",
-    color: "var(--color-muted-foreground)",
+    color: "var(--chart-2)",
   },
 } satisfies ChartConfig
 
@@ -60,15 +63,22 @@ const monthIndex: Record<string, number> = {
 }
 
 export function FinancialOverview() {
+  const { format: money } = useMoney()
+  const chartAnimation = useChartAnimation()
   const [date, setDate] = useState<DateRange | undefined>({
-    from: new Date(2026, 0, 1),
-    to: new Date(2026, 11, 31),
+    from: startOfYear(today),
+    to: endOfMonth(today), // no future months
   })
 
   const filteredData = useMemo(() => {
     if (!date?.from || !date?.to) return financialOverview
-    const fromMonth = date.from.getMonth()
-    const toMonth = date.to.getMonth()
+    let fromMonth = date.from.getMonth()
+    let toMonth = date.to.getMonth()
+    // Ensure at least 3 months are shown for readability
+    if (toMonth - fromMonth < 2) {
+      fromMonth = Math.max(0, fromMonth - 1)
+      toMonth = Math.min(11, toMonth + 1)
+    }
     return financialOverview.filter((d) => {
       const m = monthIndex[d.month]
       return m >= fromMonth && m <= toMonth
@@ -83,24 +93,24 @@ export function FinancialOverview() {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+      <CardHeader className="flex flex-col gap-3 space-y-0 pb-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
           <CardTitle className="text-base font-semibold">
             Financial Overview
           </CardTitle>
-          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5">
               <span className="size-2 rounded-full bg-primary" />
               Current Year{" "}
               <span className="font-medium text-foreground">
-                ${totals.current.toLocaleString()}
+                <Money value={totals.current} decimals={0} />
               </span>
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="size-2 rounded-full bg-muted-foreground/40" />
+              <span className="size-2 rounded-full bg-chart-2" />
               Last Year{" "}
               <span className="font-medium text-foreground">
-                ${totals.last.toLocaleString()}
+                <Money value={totals.last} decimals={0} />
               </span>
             </span>
           </div>
@@ -111,7 +121,7 @@ export function FinancialOverview() {
               <Button
                 variant="outline"
                 className={cn(
-                  "h-8 w-[200px] justify-start text-left text-xs font-normal",
+                  "h-8 w-full justify-start text-left text-xs font-normal sm:w-[200px]",
                   !date && "text-muted-foreground"
                 )}
               />
@@ -145,7 +155,7 @@ export function FinancialOverview() {
         <ChartContainer config={chartConfig} className="h-[260px] w-full">
           <AreaChart
             data={filteredData}
-            margin={{ top: 8, right: 8, bottom: 0, left: -20 }}
+            margin={{ top: 8, right: 8, bottom: 0, left: -6 }}
           >
             <defs>
               <linearGradient id="fillCurrent" x1="0" y1="0" x2="0" y2="1">
@@ -181,28 +191,30 @@ export function FinancialOverview() {
               fontSize={12}
               tickMargin={8}
               stroke="var(--color-muted-foreground)"
-              tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
+              tickFormatter={(v) => money(v, { compact: true })}
             />
             <ChartTooltip
               content={
                 <ChartTooltipContent
                   labelFormatter={(label) => label}
                   formatter={(value) =>
-                    `$${Number(value).toLocaleString()}`
+                    money(Number(value), { decimals: 0 })
                   }
                 />
               }
             />
             <Area
+              {...chartAnimation}
               dataKey="lastYear"
               type="linear"
-              stroke="var(--color-muted-foreground)"
-              strokeOpacity={0.3}
+              stroke="var(--chart-2)"
+              strokeOpacity={0.7}
               strokeWidth={1.5}
               fill="transparent"
-              dot={<SquareDot fill="var(--color-muted-foreground)" opacity={0.3} size={5} />}
+              dot={<SquareDot fill="var(--chart-2)" opacity={0.75} size={5} />}
             />
             <Area
+              {...chartAnimation}
               dataKey="currentYear"
               type="linear"
               stroke="var(--color-primary)"

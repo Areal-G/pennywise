@@ -16,10 +16,14 @@ import {
 import { cn } from "@/lib/utils"
 import { cryptoCoins } from "@/data/seed"
 import type { CryptoPrices } from "./crypto-page-client"
+import { Money } from "@/components/money"
+import { useMoney } from "@/lib/demo-store"
+import { convertToUsd } from "@/lib/currency"
 
 type ActionFlow = "idle" | "input" | "loading" | "success"
 
 export function MyBalance({ prices }: { prices: CryptoPrices }) {
+  const { format, currency } = useMoney()
   const [highlightedCoin, setHighlightedCoin] = React.useState("eth")
   const [topUpFlow, setTopUpFlow] = React.useState<ActionFlow>("idle")
   const [withdrawFlow, setWithdrawFlow] = React.useState<ActionFlow>("idle")
@@ -39,14 +43,14 @@ export function MyBalance({ prices }: { prices: CryptoPrices }) {
   const stats = [
     {
       label: "Total Profit",
-      value: `+$${(totalBalance * 0.033).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      value: format(totalBalance * 0.033, { sign: true }),
       positive: true,
     },
     { label: "Avg. Growing", value: "+14.63%", positive: true },
     {
       label: coin ? coin.symbol : "Best Token",
       value: coin
-        ? `$${coinValue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+        ? format(coinValue)
         : "Ethereum",
       positive: null,
     },
@@ -62,7 +66,7 @@ export function MyBalance({ prices }: { prices: CryptoPrices }) {
       if (!val || val <= 0) return
       setTopUpFlow("loading")
       setTimeout(() => {
-        setSuccessMsg(`Topped up $${val.toFixed(2)}`)
+        setSuccessMsg(`Topped up ${format(convertToUsd(val, currency))}`)
         setTopUpFlow("success")
         setTimeout(() => {
           setTopUpFlow("idle")
@@ -83,7 +87,7 @@ export function MyBalance({ prices }: { prices: CryptoPrices }) {
       if (!val || val <= 0) return
       setWithdrawFlow("loading")
       setTimeout(() => {
-        setSuccessMsg(`Withdrew $${val.toFixed(2)}`)
+        setSuccessMsg(`Withdrew ${format(convertToUsd(val, currency))}`)
         setWithdrawFlow("success")
         setTimeout(() => {
           setWithdrawFlow("idle")
@@ -95,7 +99,7 @@ export function MyBalance({ prices }: { prices: CryptoPrices }) {
   }
 
   return (
-    <Card className="lg:col-span-4">
+    <Card className="xl:col-span-4">
       <CardHeader>
         <CardTitle>My Balance</CardTitle>
         <CardAction>
@@ -121,10 +125,10 @@ export function MyBalance({ prices }: { prices: CryptoPrices }) {
           transition={{ duration: 0.3 }}
           className="text-3xl font-bold tabular-nums tracking-tight"
         >
-          ${totalBalance.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          <Money value={totalBalance} />
         </motion.p>
 
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           {stats.map((stat) => (
             <div key={stat.label} className="space-y-1">
               <p className="text-xs text-muted-foreground">{stat.label}</p>

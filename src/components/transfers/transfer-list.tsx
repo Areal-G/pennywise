@@ -3,23 +3,19 @@
 import Image from "next/image"
 import { AnimatePresence, motion } from "motion/react"
 import { XIcon } from "lucide-react"
+import { EmptyState } from "@/components/empty-state"
 
 import { cn } from "@/lib/utils"
 import type { TransferRecord } from "@/data/seed"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Money } from "@/components/money"
 
 interface TransferListProps {
   transfers: TransferRecord[]
   onCancel: (id: string) => void
 }
 
-const fmt = (n: number) =>
-  new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-  }).format(n)
 
 function statusBadge(status: TransferRecord["status"]) {
   switch (status) {
@@ -51,9 +47,8 @@ export function TransferList({ transfers, onCancel }: TransferListProps) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="flex h-32 items-center justify-center text-sm text-muted-foreground"
             >
-              No transfers found.
+              <EmptyState variant="filter" className="py-10" />
             </motion.div>
           )}
 
@@ -103,9 +98,9 @@ export function TransferList({ transfers, onCancel }: TransferListProps) {
                     transfer.type === "scheduled" && "text-amber-500"
                   )}
                 >
-                  {transfer.type === "sent" && "-"}
+                  {transfer.type === "sent" && "−"}
                   {transfer.type === "received" && "+"}
-                  {fmt(transfer.amount)}
+                  <Money value={transfer.amount} />
                 </p>
                 <p className="text-xs text-muted-foreground">{transfer.date}</p>
               </div>
@@ -121,7 +116,7 @@ export function TransferList({ transfers, onCancel }: TransferListProps) {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-7 gap-1 text-xs opacity-0 transition-opacity group-hover:opacity-100"
+                    className="h-7 gap-1 text-xs opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 pointer-coarse:opacity-100"
                     onClick={() => onCancel(transfer.id)}
                   >
                     <XIcon className="size-3" />

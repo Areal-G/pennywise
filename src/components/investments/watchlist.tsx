@@ -12,14 +12,32 @@ import {
 } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { toast } from "@/components/ui/toaster"
 import { cn } from "@/lib/utils"
-import { watchlistItems, type WatchlistItem } from "@/data/seed"
+import { watchlistItems, watchlistSuggestions, type WatchlistItem } from "@/data/seed"
+import { Money, useChartAnimation } from "@/components/money"
 
 export function Watchlist() {
+  const chartAnimation = useChartAnimation()
   const [items, setItems] = useState<WatchlistItem[]>(watchlistItems)
 
   const removeItem = (id: string) => {
     setItems((prev) => prev.filter((w) => w.id !== id))
+  }
+
+  // Anything not already on the list (including removed items) can be added back
+  const addable = [...watchlistItems, ...watchlistSuggestions].filter(
+    (w) => !items.some((i) => i.id === w.id)
+  )
+  const addItem = (item: WatchlistItem) => {
+    setItems((prev) => [...prev, item])
+    toast(`${item.symbol} added to watchlist`)
   }
 
   return (
@@ -61,6 +79,7 @@ export function Watchlist() {
                     data={w.sparklineData.map((v, i) => ({ i, v }))}
                   >
                     <Line
+                      {...chartAnimation}
                       type="monotone"
                       dataKey="v"
                       stroke={positive ? "var(--color-emerald-500)" : "var(--color-rose-500)"}
@@ -72,7 +91,7 @@ export function Watchlist() {
 
                 {/* Price */}
                 <span className="w-20 text-right text-sm font-medium tabular-nums">
-                  ${w.currentPrice.toFixed(2)}
+                  <Money value={w.currentPrice} />
                 </span>
 
                 {/* Day change badge */}
@@ -92,7 +111,7 @@ export function Watchlist() {
                 {/* Remove on hover */}
                 <button
                   onClick={() => removeItem(w.id)}
-                  className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground"
+                  className="ml-1 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 pointer-coarse:opacity-100 transition-opacity text-muted-foreground hover:text-foreground"
                   aria-label={`Remove ${w.symbol}`}
                 >
                   <X className="size-3.5" />
@@ -109,10 +128,22 @@ export function Watchlist() {
         </div>
 
         <div className="px-4 pt-3">
-          <Button variant="outline" size="sm" className="w-full gap-1.5">
-            <Plus className="size-3.5" />
-            Add to Watchlist
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={<Button variant="outline" size="sm" className="w-full gap-1.5" disabled={addable.length === 0} />}
+            >
+              <Plus className="size-3.5" />
+              Add to Watchlist
+            </DropdownMenuTrigger>
+            <DropdownMenuContent side="top" align="center" className="w-56">
+              {addable.map((w) => (
+                <DropdownMenuItem key={w.id} onClick={() => addItem(w)}>
+                  <span className="w-12 font-semibold">{w.symbol}</span>
+                  <span className="truncate text-muted-foreground">{w.name}</span>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </CardContent>
     </Card>

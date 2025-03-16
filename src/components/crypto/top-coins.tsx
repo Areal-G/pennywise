@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 import { cryptoCoins } from "@/data/seed"
 import type { CryptoPrices } from "./crypto-page-client"
+import { Money } from "@/components/money"
 
 interface TopCoinsProps {
   prices: CryptoPrices
@@ -49,7 +50,7 @@ export function TopCoins({ prices, originalPrices, selectedCoin, onSelectCoin }:
   }, [prices])
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 lg:col-span-8">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 xl:col-span-8">
       {top3.map((coin) => {
         const livePrice = prices[coin.id] ?? coin.price
         const origPrice = originalPrices[coin.id] ?? coin.price
@@ -98,11 +99,7 @@ export function TopCoins({ prices, originalPrices, selectedCoin, onSelectCoin }:
                   transition={{ duration: 0.6 }}
                   className="rounded px-1 text-xl font-bold tabular-nums"
                 >
-                  $
-                  {livePrice.toLocaleString("en-US", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}
+                  <Money value={livePrice} />
                 </motion.span>
                 <span
                   className={cn(

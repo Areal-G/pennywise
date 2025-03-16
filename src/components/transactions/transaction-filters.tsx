@@ -40,7 +40,7 @@ export function TransactionFilters({
   return (
     <div className="flex flex-wrap items-center gap-2">
       {/* Search */}
-      <div className="relative min-w-[200px] flex-1">
+      <div className="relative w-full sm:min-w-[200px] sm:flex-1">
         <SearchIcon className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           placeholder="Search transactions..."
@@ -53,9 +53,10 @@ export function TransactionFilters({
       {/* Category */}
       <Select
         value={categoryFilter}
+        items={{ all: "All Categories", ...Object.fromEntries(categories.map((c) => [c, c])) }}
         onValueChange={(v) => v && setCategoryFilter(v)}
       >
-        <SelectTrigger>
+        <SelectTrigger aria-label="Filter by category">
           <SelectValue placeholder="Category" />
         </SelectTrigger>
         <SelectContent>
@@ -71,9 +72,10 @@ export function TransactionFilters({
       {/* Status */}
       <Select
         value={statusFilter}
+        items={{ all: "All Statuses", completed: "Completed", pending: "Pending", failed: "Failed" }}
         onValueChange={(v) => v && setStatusFilter(v)}
       >
-        <SelectTrigger>
+        <SelectTrigger aria-label="Filter by status">
           <SelectValue placeholder="Status" />
         </SelectTrigger>
         <SelectContent>
@@ -89,6 +91,8 @@ export function TransactionFilters({
         {typeOptions.map((opt) => (
           <button
             key={opt}
+            type="button"
+            aria-pressed={typeFilter === opt}
             onClick={() => setTypeFilter(opt)}
             className={cn(
               "rounded-md px-3 py-1 text-sm font-medium capitalize transition-colors",

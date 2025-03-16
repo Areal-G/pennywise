@@ -16,6 +16,8 @@ import {
 } from "@/components/ui/chart"
 import { cn } from "@/lib/utils"
 import { portfolioHistory } from "@/data/seed"
+import { useChartAnimation } from "@/components/money"
+import { useMoney } from "@/lib/demo-store"
 
 const PERIODS = [
   { label: "1M", months: 1 },
@@ -30,6 +32,8 @@ const chartConfig: ChartConfig = {
 }
 
 export function PerformanceChart() {
+  const { format } = useMoney()
+  const chartAnimation = useChartAnimation()
   const [period, setPeriod] = useState<number>(12)
 
   const data = useMemo(
@@ -40,9 +44,9 @@ export function PerformanceChart() {
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <CardTitle>Performance</CardTitle>
-          <div className="flex gap-1">
+          <div className="flex flex-wrap gap-1">
             {PERIODS.map((p) => (
               <button
                 key={p.label}
@@ -92,19 +96,20 @@ export function PerformanceChart() {
               tickLine={false}
               axisLine={false}
               width={50}
-              tickFormatter={(v: number) => `$${(v / 1000).toFixed(0)}k`}
+              tickFormatter={(v: number) => format(v, { compact: true })}
               tick={{ fontSize: 11 }}
             />
             <ChartTooltip
               content={
                 <ChartTooltipContent
                   formatter={(value) =>
-                    `$${Number(value).toLocaleString()}`
+                    format(Number(value), { decimals: 0 })
                   }
                 />
               }
             />
             <Area
+              {...chartAnimation}
               type="monotone"
               dataKey="portfolio"
               stroke="var(--color-chart-1)"
@@ -112,6 +117,7 @@ export function PerformanceChart() {
               fill="url(#portfolioGrad)"
             />
             <Area
+              {...chartAnimation}
               type="monotone"
               dataKey="sp500"
               stroke="var(--color-chart-3)"

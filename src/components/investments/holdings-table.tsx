@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/table"
 import { cn } from "@/lib/utils"
 import { holdings as seedHoldings, type Holding } from "@/data/seed"
+import { Money, useChartAnimation } from "@/components/money"
 
 type SortDir = "asc" | "desc" | null
 type SortKey = "name" | "quantity" | "avgBuyPrice" | "currentPrice" | "plPct" | "plDollar"
@@ -44,6 +45,7 @@ function getPl(h: Holding) {
 }
 
 export function HoldingsTable() {
+  const chartAnimation = useChartAnimation()
   const [prices, setPrices] = useState<Record<string, number>>(() => {
     const map: Record<string, number> = {}
     for (const h of seedHoldings) map[h.id] = h.currentPrice
@@ -141,6 +143,7 @@ export function HoldingsTable() {
         <CardTitle>Holdings</CardTitle>
       </CardHeader>
       <CardContent className="px-0">
+        <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -151,7 +154,7 @@ export function HoldingsTable() {
                 Asset <SortIcon col="name" sortKey={sortKey} sortDir={sortDir} />
               </TableHead>
               <TableHead
-                className="cursor-pointer select-none text-right"
+                className="hidden cursor-pointer select-none text-right sm:table-cell"
                 onClick={() => cycleSortDir("quantity")}
               >
                 Qty <SortIcon col="quantity" sortKey={sortKey} sortDir={sortDir} />
@@ -175,7 +178,7 @@ export function HoldingsTable() {
                 P&L % <SortIcon col="plPct" sortKey={sortKey} sortDir={sortDir} />
               </TableHead>
               <TableHead
-                className="cursor-pointer select-none text-right"
+                className="hidden cursor-pointer select-none text-right md:table-cell"
                 onClick={() => cycleSortDir("plDollar")}
               >
                 P&L $ <SortIcon col="plDollar" sortKey={sortKey} sortDir={sortDir} />
@@ -208,11 +211,11 @@ export function HoldingsTable() {
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="text-right tabular-nums">
+                  <TableCell className="hidden text-right tabular-nums sm:table-cell">
                     {h.quantity}
                   </TableCell>
                   <TableCell className="hidden text-right tabular-nums lg:table-cell">
-                    ${h.avgBuyPrice.toFixed(2)}
+                    <Money value={h.avgBuyPrice} />
                   </TableCell>
                   <TableCell className="text-right tabular-nums">
                     <motion.span
@@ -229,7 +232,7 @@ export function HoldingsTable() {
                       transition={{ duration: 0.6 }}
                       className="rounded px-1 py-0.5"
                     >
-                      ${h.currentPrice.toFixed(2)}
+                      <Money value={h.currentPrice} />
                     </motion.span>
                   </TableCell>
                   <TableCell
@@ -250,12 +253,12 @@ export function HoldingsTable() {
                   </TableCell>
                   <TableCell
                     className={cn(
-                      "text-right tabular-nums font-medium",
+                      "hidden text-right tabular-nums font-medium md:table-cell",
                       positive ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
                     )}
                   >
                     {positive ? "+" : ""}
-                    ${pl.dollar.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    <Money value={pl.dollar} />
                   </TableCell>
                   <TableCell className="hidden pr-4 xl:table-cell">
                     <div className="ml-auto w-[80px] h-[30px]">
@@ -265,6 +268,7 @@ export function HoldingsTable() {
                         data={h.sparklineData.map((v, i) => ({ i, v }))}
                       >
                         <Line
+                          {...chartAnimation}
                           type="monotone"
                           dataKey="v"
                           stroke={positive ? "var(--color-emerald-500)" : "var(--color-rose-500)"}
@@ -279,6 +283,7 @@ export function HoldingsTable() {
             })}
           </TableBody>
         </Table>
+        </div>
       </CardContent>
     </Card>
   )

@@ -23,12 +23,9 @@ All notable changes to this project will be documented in this file.
 - **Shared layout** — Route group `(dashboard)` with sidebar shell, clean URLs
 - **Seed data** — 300+ realistic mock entries with types, `logo()` helper for company logos, `avatar()` helper
 - **Local assets** — 37 company logos + 9 avatars served from /public (no external API calls)
-- **Custom favicon** — SVG landmark icon matching Vault branding
+- **Custom favicon** — SVG landmark icon matching Pennywise branding
 
 ### Infrastructure
 
 - GitHub Actions CI (build + type check + lint)
-- GitHub Sponsors + Buy Me a Coffee funding
 - Template repository enabled
-- MIT License
-- Professional README with badges, showcase image, sponsor section

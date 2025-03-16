@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "next-themes";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip"
+import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -15,8 +16,18 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "pennywise",
-  description: "A premium open-source fintech dashboard built with Next.js, shadcn/ui, and Tailwind CSS. Portfolio tracking, transactions, analytics, and more.",
+  title: "Pennywise — Personal Finance Dashboard",
+  description: "Track your accounts, spending, budgets, investments, and crypto in one place with Pennywise.",
+  openGraph: {
+    title: "Pennywise — Personal Finance Dashboard",
+    description: "Track your accounts, spending, budgets, investments, and crypto in one place.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Pennywise — Personal Finance Dashboard",
+    description: "Track your accounts, spending, budgets, investments, and crypto in one place.",
+  },
 };
 
 export default function RootLayout({
@@ -33,6 +44,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <TooltipProvider>{children}</TooltipProvider>
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

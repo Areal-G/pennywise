@@ -2,24 +2,27 @@
 
 import { useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { format, getDaysInMonth, setDate, startOfMonth } from "date-fns"
 import { dailySpending } from "@/data/seed"
+import { isoDay, today } from "@/lib/mock"
 import { cn } from "@/lib/utils"
+import { Money } from "@/components/money"
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
 export function SpendingCalendar() {
   const { weeks, maxAmount } = useMemo(() => {
     const map = new Map(dailySpending.map((d) => [d.date, d.amount]))
-    // Build April 2026 calendar
-    const firstDay = new Date(2026, 3, 1) // April 1
+    // Build the current month's calendar
+    const firstDay = startOfMonth(today)
     const startPad = firstDay.getDay() // day of week offset
-    const daysInMonth = 30
+    const daysInMonth = getDaysInMonth(today)
     const cells: { day: number | null; amount: number; date: string }[] = []
 
     for (let i = 0; i < startPad; i++) cells.push({ day: null, amount: 0, date: "" })
     let max = 0
     for (let d = 1; d <= daysInMonth; d++) {
-      const dateStr = `2026-04-${String(d).padStart(2, "0")}`
+      const dateStr = isoDay(setDate(firstDay, d))
       const amount = map.get(dateStr) ?? 0
       if (amount > max) max = amount
       cells.push({ day: d, amount, date: dateStr })
@@ -40,7 +43,7 @@ export function SpendingCalendar() {
     <Card>
       <CardHeader>
         <CardTitle className="text-base font-semibold">
-          April 2026 Spending
+          {format(today, "MMMM yyyy")} Spending
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -64,7 +67,7 @@ export function SpendingCalendar() {
                   cell.amount === 0
                     ? 0
                     : Math.min(Math.round((cell.amount / maxAmount) * 4), 4)
-                const isToday = cell.day === 13 // April 13 (today in seed)
+                const isToday = cell.day === today.getDate()
                 return (
                   <div
                     key={ci}
@@ -80,8 +83,8 @@ export function SpendingCalendar() {
                   >
                     <span className="text-[11px] font-medium">{cell.day}</span>
                     {cell.amount > 0 && (
-                      <span className="text-[9px] tabular-nums text-muted-foreground">
-                        ${cell.amount}
+                      <span className="hidden text-[9px] tabular-nums text-muted-foreground sm:inline">
+                        <Money value={cell.amount} decimals={0} />
                       </span>
                     )}
                   </div>

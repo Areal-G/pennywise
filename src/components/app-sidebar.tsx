@@ -1,6 +1,8 @@
 "use client"
 
+import { LogoMark } from "@/components/brand/logo"
 import * as React from "react"
+import Link from "next/link"
 import { NavMain } from "@/components/nav-main"
 import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
@@ -22,21 +24,20 @@ import {
   TargetIcon,
   SettingsIcon,
   LifeBuoyIcon,
-  LandmarkIcon,
   SendIcon,
   TrendingUpIcon,
   BitcoinIcon,
   BellIcon,
   LogInIcon,
   UserPlusIcon,
+  SparklesIcon,
+  RepeatIcon,
+  PiggyBankIcon,
+  ArrowDownUpIcon,
+  ListChecksIcon,
 } from "lucide-react"
 
 const data = {
-  user: {
-    name: "Abderrahim G.",
-    email: "abderrahim@fintech.com",
-    avatar: "/avatars/user.jpg",
-  },
   navDaily: [
     { title: "Overview", url: "/dashboard", icon: <LayoutDashboardIcon /> },
     { title: "Accounts", url: "/accounts", icon: <WalletIcon /> },
@@ -52,6 +53,13 @@ const data = {
     { title: "Analytics", url: "/analytics", icon: <ChartAreaIcon /> },
     { title: "Budgets", url: "/budgets", icon: <TargetIcon /> },
   ],
+  navPlanning: [
+    { title: "Ask Pennywise", url: "/assistant", icon: <SparklesIcon /> },
+    { title: "Subscriptions", url: "/subscriptions", icon: <RepeatIcon /> },
+    { title: "Goals", url: "/goals", icon: <PiggyBankIcon /> },
+    { title: "Cash Flow", url: "/cash-flow", icon: <ArrowDownUpIcon /> },
+    { title: "Reconcile", url: "/reconcile", icon: <ListChecksIcon /> },
+  ],
   navAuth: [
     { title: "Sign In", url: "/sign-in", icon: <LogInIcon /> },
     { title: "Sign Up", url: "/sign-up", icon: <UserPlusIcon /> },
@@ -59,7 +67,7 @@ const data = {
   navSecondary: [
     { title: "Notifications", url: "/notifications", icon: <BellIcon /> },
     { title: "Settings", url: "/settings", icon: <SettingsIcon /> },
-    { title: "Help & Support", url: "#", icon: <LifeBuoyIcon /> },
+    { title: "Help & Support", url: "/support", icon: <LifeBuoyIcon /> },
   ],
 }
 
@@ -69,12 +77,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" render={<a href="/dashboard" />}>
-              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                <LandmarkIcon className="size-4" />
-              </div>
+            <SidebarMenuButton size="lg" render={<Link href="/dashboard" />}>
+              <LogoMark className="size-8! rounded-lg shadow-sm shadow-primary/30" />
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">Shadcn Fintech</span>
+                <span className="truncate font-semibold">Pennywise</span>
                 <span className="truncate text-xs text-muted-foreground">
                   Finance Dashboard
                 </span>
@@ -87,11 +93,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={data.navDaily} label="Daily" />
         <NavMain items={data.navMoney} label="Money" />
         <NavMain items={data.navInsights} label="Insights" />
+        <NavMain items={data.navPlanning} label="Planning" />
         <NavMain items={data.navAuth} label="Auth" />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser />
       </SidebarFooter>
     </Sidebar>
   )

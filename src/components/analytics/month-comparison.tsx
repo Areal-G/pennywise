@@ -16,6 +16,8 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart"
 import { monthComparisons } from "@/data/seed"
+import { Money, useChartAnimation } from "@/components/money"
+import { useMoney } from "@/lib/demo-store"
 
 const chartConfig = {
   thisMonth: {
@@ -24,7 +26,7 @@ const chartConfig = {
   },
   lastMonth: {
     label: "Last Month",
-    color: "var(--color-muted-foreground)",
+    color: "var(--chart-2)",
   },
 } satisfies ChartConfig
 
@@ -54,6 +56,8 @@ function ChangeLabel(props: Record<string, unknown>) {
 }
 
 export function MonthComparison() {
+  const { format } = useMoney()
+  const chartAnimation = useChartAnimation()
   const totals = useMemo(() => {
     const thisMonth = monthComparisons.reduce((s, r) => s + r.thisMonth, 0)
     const lastMonth = monthComparisons.reduce((s, r) => s + r.lastMonth, 0)
@@ -67,19 +71,19 @@ export function MonthComparison() {
           <div>
             <CardTitle>Month vs Last Month</CardTitle>
             <CardDescription>
-              <span className="flex items-center gap-3 text-xs">
+              <span className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
                 <span className="flex items-center gap-1.5">
                   <span className="size-2 rounded-full bg-primary" />
                   This Month{" "}
                   <span className="font-medium tabular-nums text-foreground">
-                    ${totals.thisMonth.toLocaleString()}
+                    <Money value={totals.thisMonth} decimals={0} />
                   </span>
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="size-2 rounded-full bg-muted-foreground/30" />
+                  <span className="size-2 rounded-full bg-chart-2" />
                   Last Month{" "}
                   <span className="font-medium tabular-nums text-foreground">
-                    ${totals.lastMonth.toLocaleString()}
+                    <Money value={totals.lastMonth} decimals={0} />
                   </span>
                 </span>
               </span>
@@ -87,11 +91,11 @@ export function MonthComparison() {
           </div>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="min-w-0">
         <ChartContainer config={chartConfig} className="h-[280px] w-full">
           <BarChart
             data={monthComparisons}
-            margin={{ top: 24, right: 8, bottom: 0, left: -20 }}
+            margin={{ top: 24, right: 8, bottom: 0, left: -6 }}
             barGap={4}
           >
             <CartesianGrid
@@ -117,25 +121,27 @@ export function MonthComparison() {
               fontSize={11}
               tickMargin={8}
               stroke="var(--color-muted-foreground)"
-              tickFormatter={(v: number) => `$${v}`}
+              tickFormatter={(v: number) => format(v, { compact: true })}
             />
             <ChartTooltip
               content={
                 <ChartTooltipContent
                   formatter={(value) =>
-                    `$${Number(value).toLocaleString()}`
+                    format(Number(value), { decimals: 0 })
                   }
                 />
               }
             />
             <Bar
+              {...chartAnimation}
               dataKey="lastMonth"
-              fill="var(--color-muted-foreground)"
-              fillOpacity={0.3}
+              fill="var(--chart-2)"
+              fillOpacity={0.8}
               radius={[4, 4, 0, 0]}
               barSize={18}
             />
             <Bar
+              {...chartAnimation}
               dataKey="thisMonth"
               fill="var(--color-primary)"
               radius={[4, 4, 0, 0]}

@@ -4,7 +4,6 @@ import * as React from "react"
 import Image from "next/image"
 import {
   SearchIcon,
-  SlidersHorizontalIcon,
   MoreHorizontalIcon,
   TrendingUpIcon,
   TrendingDownIcon,
@@ -38,6 +37,7 @@ import {
 import { cn } from "@/lib/utils"
 import { cryptoCoins } from "@/data/seed"
 import type { CryptoPrices } from "./crypto-page-client"
+import { Money } from "@/components/money"
 
 function compactNumber(n: number) {
   if (n >= 1e12) return `${(n / 1e12).toFixed(2)}T`
@@ -54,9 +54,10 @@ interface MarketOverviewProps {
   originalPrices: CryptoPrices
   selectedCoin: string
   onSelectCoin: (id: string) => void
+  onTrade: (side: "Buy" | "Sell", coin: string) => void
 }
 
-export function MarketOverview({ prices, originalPrices, selectedCoin, onSelectCoin }: MarketOverviewProps) {
+export function MarketOverview({ prices, originalPrices, selectedCoin, onSelectCoin, onTrade }: MarketOverviewProps) {
   const [search, setSearch] = React.useState("")
   const [sortField, setSortField] = React.useState<SortField | null>(null)
   const [sortDir, setSortDir] = React.useState<SortDir>(null)
@@ -139,7 +140,7 @@ export function MarketOverview({ prices, originalPrices, selectedCoin, onSelectC
   }
 
   return (
-    <Card className="lg:col-span-8">
+    <Card className="xl:col-span-8">
       <CardHeader>
         <CardTitle>Market Overview</CardTitle>
         <CardAction className="flex items-center gap-2">
@@ -147,17 +148,16 @@ export function MarketOverview({ prices, originalPrices, selectedCoin, onSelectC
             <SearchIcon className="absolute left-2 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Search..."
+              aria-label="Search coins"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="h-7 w-36 pl-7 text-xs"
             />
           </div>
-          <Button variant="outline" size="icon-xs">
-            <SlidersHorizontalIcon className="size-3.5" />
-          </Button>
         </CardAction>
       </CardHeader>
       <CardContent className="px-0">
+        <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -170,7 +170,7 @@ export function MarketOverview({ prices, originalPrices, selectedCoin, onSelectC
                 <SortIndicator field="price" />
               </TableHead>
               <TableHead
-                className="cursor-pointer select-none text-right"
+                className="hidden cursor-pointer select-none text-right sm:table-cell"
                 onClick={() => handleSort("volume")}
               >
                 Volume
@@ -231,14 +231,10 @@ export function MarketOverview({ prices, originalPrices, selectedCoin, onSelectC
                       transition={{ duration: 0.6 }}
                       className="rounded px-1"
                     >
-                      $
-                      {coin.livePrice.toLocaleString("en-US", {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}
+                      <Money value={coin.livePrice} />
                     </motion.span>
                   </TableCell>
-                  <TableCell className="text-right tabular-nums text-muted-foreground">
+                  <TableCell className="hidden text-right tabular-nums text-muted-foreground sm:table-cell">
                     {compactNumber(coin.liveVolume)}
                   </TableCell>
                   <TableCell className="text-right">
@@ -262,14 +258,14 @@ export function MarketOverview({ prices, originalPrices, selectedCoin, onSelectC
                   <TableCell className="pr-4" onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
                       <DropdownMenuTrigger
-                        render={<Button variant="ghost" size="icon-xs" />}
+                        render={<Button variant="ghost" size="icon-xs" aria-label={`${coin.name} actions`} />}
                       >
                         <MoreHorizontalIcon className="size-4" />
                       </DropdownMenuTrigger>
                       <DropdownMenuContent side="bottom" align="end">
-                        <DropdownMenuItem>Buy</DropdownMenuItem>
-                        <DropdownMenuItem>Sell</DropdownMenuItem>
-                        <DropdownMenuItem onSelect={() => onSelectCoin(coin.id)}>
+                        <DropdownMenuItem onClick={() => onTrade("Buy", coin.id)}>Buy</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onTrade("Sell", coin.id)}>Sell</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onSelectCoin(coin.id)}>
                           View Chart
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -287,6 +283,7 @@ export function MarketOverview({ prices, originalPrices, selectedCoin, onSelectC
             )}
           </TableBody>
         </Table>
+        </div>
       </CardContent>
     </Card>
   )

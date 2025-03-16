@@ -2,6 +2,17 @@
 // Seed data – realistic fintech dashboard mock data
 // ---------------------------------------------------------------------------
 
+import type { CardTheme } from "@/lib/card-themes"
+import { addDays, endOfMonth, format, getDaysInMonth, getQuarter, startOfMonth, subDays, subMonths } from "date-fns"
+import { formatDay, isoDay, parseDay, seededRandom, shiftDay, shiftMonth, today } from "@/lib/mock"
+
+// Deterministic "randomness" so server and client render the same data
+const random = seededRandom(20260413)
+
+const lastQuarter = subMonths(today, 3)
+const lastQuarterLabel = `Q${getQuarter(lastQuarter)} ${format(lastQuarter, "yyyy")}`
+const lastMonthLabel = format(subMonths(today, 1), "MMMM yyyy")
+
 // Avatar URLs (local)
 const avatar = (id: number) => `/avatars/${id}.jpg`
 
@@ -63,8 +74,8 @@ export const spendingLimit = {
   spent: 2180,
   remaining: 920,
   currency: "USD",
-  periodStart: "Apr 01",
-  periodEnd: "Apr 30",
+  periodStart: format(startOfMonth(today), "MMM dd"),
+  periodEnd: format(endOfMonth(today), "MMM dd"),
 }
 
 // ── Financial Overview (monthly revenue chart) ─────────────────────────────
@@ -143,7 +154,7 @@ export const recentTransactions: Transaction[] = [
     merchant: "Spotify",
     transactionId: "INV_920076",
     amount: -9.99,
-    date: "Apr 10, 2026",
+    date: shiftDay("Apr 10, 2026"),
     logo: logo("spotify.com"),
     category: "Entertainment",
   },
@@ -152,7 +163,7 @@ export const recentTransactions: Transaction[] = [
     merchant: "AWS Cloud Services",
     transactionId: "INV_918263",
     amount: -120.0,
-    date: "Apr 09, 2026",
+    date: shiftDay("Apr 09, 2026"),
     logo: "/logos/aws-amazon-com.svg",
     category: "Technology",
   },
@@ -161,7 +172,7 @@ export const recentTransactions: Transaction[] = [
     merchant: "Stripe Payout",
     transactionId: "TXN_847291",
     amount: 4250.0,
-    date: "Apr 08, 2026",
+    date: shiftDay("Apr 08, 2026"),
     logo: logo("stripe.com"),
     category: "Income",
   },
@@ -170,7 +181,7 @@ export const recentTransactions: Transaction[] = [
     merchant: "Figma Pro",
     transactionId: "INV_773920",
     amount: -15.0,
-    date: "Apr 07, 2026",
+    date: shiftDay("Apr 07, 2026"),
     logo: logo("figma.com"),
     category: "Design",
   },
@@ -179,7 +190,7 @@ export const recentTransactions: Transaction[] = [
     merchant: "ChatGPT Plus",
     transactionId: "INV_920077",
     amount: -20.0,
-    date: "Apr 06, 2026",
+    date: shiftDay("Apr 06, 2026"),
     logo: logo("openai.com"),
     category: "AI Tools",
   },
@@ -188,7 +199,7 @@ export const recentTransactions: Transaction[] = [
     merchant: "Google Workspace",
     transactionId: "INV_661204",
     amount: -12.0,
-    date: "Apr 05, 2026",
+    date: shiftDay("Apr 05, 2026"),
     logo: logo("google.com"),
     category: "Productivity",
   },
@@ -197,75 +208,11 @@ export const recentTransactions: Transaction[] = [
     merchant: "Client Payment",
     transactionId: "TXN_559831",
     amount: 8500.0,
-    date: "Apr 04, 2026",
+    date: shiftDay("Apr 04, 2026"),
     logo: logo("paypal.com"),
     category: "Income",
   },
 ]
-
-// ── Sidebar Navigation ─────────────────────────────────────────────────────
-export const sidebarNav = {
-  main: [
-    {
-      title: "Overview",
-      url: "/dashboard",
-      iconName: "layout-dashboard" as const,
-      isActive: true,
-    },
-    {
-      title: "Accounts",
-      url: "#",
-      iconName: "wallet" as const,
-      items: [
-        { title: "All Accounts", url: "#" },
-        { title: "Savings", url: "#" },
-        { title: "Crypto", url: "#" },
-      ],
-    },
-    {
-      title: "Transactions",
-      url: "#",
-      iconName: "arrow-left-right" as const,
-      items: [
-        { title: "All Transactions", url: "#" },
-        { title: "Pending", url: "#" },
-        { title: "Recurring", url: "#" },
-      ],
-    },
-    {
-      title: "Cards",
-      url: "#",
-      iconName: "credit-card" as const,
-      items: [
-        { title: "My Cards", url: "#" },
-        { title: "Virtual Cards", url: "#" },
-      ],
-    },
-    {
-      title: "Analytics",
-      url: "#",
-      iconName: "chart-area" as const,
-      items: [
-        { title: "Spending", url: "#" },
-        { title: "Income", url: "#" },
-        { title: "Net Worth", url: "#" },
-      ],
-    },
-    {
-      title: "Budgets",
-      url: "#",
-      iconName: "target" as const,
-      items: [
-        { title: "Monthly Budget", url: "#" },
-        { title: "Goals", url: "#" },
-      ],
-    },
-  ],
-  secondary: [
-    { title: "Settings", url: "#", iconName: "settings" as const },
-    { title: "Help & Support", url: "#", iconName: "life-buoy" as const },
-  ],
-}
 
 // ══════════════════════════════════════════════════════════════════════════════
 // PAGE DATA: Transactions
@@ -287,32 +234,95 @@ export type FullTransaction = {
 }
 
 export const fullTransactions: FullTransaction[] = [
-  { id: "t1", merchant: "Spotify", transactionId: "INV_920076", amount: -9.99, date: "Apr 10, 2026", logo: logo("spotify.com"), category: "Entertainment", status: "completed", type: "expense", merchantInfo: "Spotify AB, Stockholm, SE", cardLast4: "4589" },
-  { id: "t2", merchant: "AWS Cloud Services", transactionId: "INV_918263", amount: -120.00, date: "Apr 09, 2026", logo: "/logos/aws-amazon-com.svg", category: "Technology", status: "completed", type: "expense", merchantInfo: "Amazon Web Services, Seattle, WA", cardLast4: "4589" },
-  { id: "t3", merchant: "Stripe Payout", transactionId: "TXN_847291", amount: 4250.00, date: "Apr 08, 2026", logo: logo("stripe.com"), category: "Income", status: "completed", type: "income", merchantInfo: "Stripe Inc, San Francisco, CA" },
-  { id: "t4", merchant: "Figma Pro", transactionId: "INV_773920", amount: -15.00, date: "Apr 07, 2026", logo: logo("figma.com"), category: "Design", status: "completed", type: "expense", merchantInfo: "Figma Inc, San Francisco, CA", cardLast4: "7321" },
-  { id: "t5", merchant: "ChatGPT Plus", transactionId: "INV_920077", amount: -20.00, date: "Apr 06, 2026", logo: logo("openai.com"), category: "AI Tools", status: "completed", type: "expense", merchantInfo: "OpenAI LLC, San Francisco, CA", cardLast4: "4589" },
-  { id: "t6", merchant: "Google Workspace", transactionId: "INV_661204", amount: -12.00, date: "Apr 05, 2026", logo: logo("google.com"), category: "Productivity", status: "completed", type: "expense", merchantInfo: "Google LLC, Mountain View, CA", cardLast4: "4589" },
-  { id: "t7", merchant: "Client Payment", transactionId: "TXN_559831", amount: 8500.00, date: "Apr 04, 2026", logo: logo("paypal.com"), category: "Income", status: "completed", type: "income", merchantInfo: "PayPal Holdings, San Jose, CA" },
-  { id: "t8", merchant: "Uber", transactionId: "INV_882341", amount: -24.50, date: "Apr 03, 2026", logo: logo("uber.com"), category: "Transport", status: "completed", type: "expense", merchantInfo: "Uber Technologies, San Francisco, CA", cardLast4: "9012" },
-  { id: "t9", merchant: "Netflix", transactionId: "INV_773001", amount: -15.99, date: "Apr 02, 2026", logo: logo("netflix.com"), category: "Entertainment", status: "completed", type: "expense", merchantInfo: "Netflix Inc, Los Gatos, CA", cardLast4: "4589" },
-  { id: "t10", merchant: "Amazon", transactionId: "INV_990123", amount: -89.99, date: "Apr 01, 2026", logo: logo("amazon.com"), category: "Shopping", status: "completed", type: "expense", merchantInfo: "Amazon.com Inc, Seattle, WA", cardLast4: "4589" },
-  { id: "t11", merchant: "Starbucks", transactionId: "INV_445501", amount: -6.75, date: "Mar 31, 2026", logo: logo("starbucks.com"), category: "Food & Dining", status: "completed", type: "expense", cardLast4: "9012" },
-  { id: "t12", merchant: "DoorDash", transactionId: "INV_334112", amount: -32.40, date: "Mar 30, 2026", logo: logo("doordash.com"), category: "Food & Dining", status: "completed", type: "expense", cardLast4: "4589" },
-  { id: "t13", merchant: "Adobe Creative Cloud", transactionId: "INV_221098", amount: -54.99, date: "Mar 29, 2026", logo: logo("adobe.com"), category: "Design", status: "completed", type: "expense", merchantInfo: "Adobe Inc, San Jose, CA", cardLast4: "7321" },
-  { id: "t14", merchant: "Slack", transactionId: "INV_110987", amount: -8.75, date: "Mar 28, 2026", logo: logo("slack.com"), category: "Productivity", status: "completed", type: "expense", cardLast4: "4589" },
-  { id: "t15", merchant: "GitHub Pro", transactionId: "INV_998877", amount: -4.00, date: "Mar 27, 2026", logo: logo("github.com"), category: "Technology", status: "completed", type: "expense", merchantInfo: "GitHub Inc, San Francisco, CA", cardLast4: "4589" },
-  { id: "t16", merchant: "Notion", transactionId: "INV_887766", amount: -10.00, date: "Mar 26, 2026", logo: logo("notion.so"), category: "Productivity", status: "pending", type: "expense", cardLast4: "7321" },
-  { id: "t17", merchant: "Vercel Pro", transactionId: "INV_776655", amount: -20.00, date: "Mar 25, 2026", logo: logo("vercel.com"), category: "Technology", status: "completed", type: "expense", merchantInfo: "Vercel Inc, San Francisco, CA", cardLast4: "4589" },
-  { id: "t18", merchant: "LinkedIn Premium", transactionId: "INV_665544", amount: -29.99, date: "Mar 24, 2026", logo: logo("linkedin.com"), category: "Productivity", status: "completed", type: "expense", cardLast4: "9012" },
-  { id: "t19", merchant: "Apple iCloud+", transactionId: "INV_554433", amount: -2.99, date: "Mar 23, 2026", logo: logo("apple.com"), category: "Technology", status: "completed", type: "expense", cardLast4: "4589" },
-  { id: "t20", merchant: "Airbnb Booking", transactionId: "INV_443322", amount: -245.00, date: "Mar 22, 2026", logo: logo("airbnb.com"), category: "Travel", status: "completed", type: "expense", merchantInfo: "Airbnb Inc, San Francisco, CA", cardLast4: "9012" },
-  { id: "t21", merchant: "Freelance Project", transactionId: "TXN_332211", amount: 3200.00, date: "Mar 21, 2026", logo: logo("wise.com"), category: "Income", status: "completed", type: "income", merchantInfo: "Wise (TransferWise), London, UK" },
-  { id: "t22", merchant: "Target", transactionId: "INV_221100", amount: -67.43, date: "Mar 20, 2026", logo: logo("target.com"), category: "Shopping", status: "completed", type: "expense", cardLast4: "9012" },
-  { id: "t23", merchant: "Shell Gas", transactionId: "INV_110099", amount: -52.30, date: "Mar 19, 2026", logo: logo("shell.com"), category: "Transport", status: "failed", type: "expense", notes: "Card declined — insufficient funds", cardLast4: "7321" },
-  { id: "t24", merchant: "Delta Airlines", transactionId: "INV_009988", amount: -389.00, date: "Mar 18, 2026", logo: logo("delta.com"), category: "Travel", status: "pending", type: "expense", merchantInfo: "Delta Air Lines, Atlanta, GA", cardLast4: "9012" },
-  { id: "t25", merchant: "Dividend — AAPL", transactionId: "TXN_889977", amount: 142.50, date: "Mar 17, 2026", logo: logo("apple.com"), category: "Income", status: "completed", type: "income", notes: "Q1 2026 dividend payment" },
+  { id: "t1", merchant: "Spotify", transactionId: "INV_920076", amount: -9.99, date: shiftDay("Apr 10, 2026"), logo: logo("spotify.com"), category: "Entertainment", status: "completed", type: "expense", merchantInfo: "Spotify AB, Stockholm, SE", cardLast4: "4589" },
+  { id: "t2", merchant: "AWS Cloud Services", transactionId: "INV_918263", amount: -120.00, date: shiftDay("Apr 09, 2026"), logo: "/logos/aws-amazon-com.svg", category: "Technology", status: "completed", type: "expense", merchantInfo: "Amazon Web Services, Seattle, WA", cardLast4: "4589" },
+  { id: "t3", merchant: "Stripe Payout", transactionId: "TXN_847291", amount: 4250.00, date: shiftDay("Apr 08, 2026"), logo: logo("stripe.com"), category: "Income", status: "completed", type: "income", merchantInfo: "Stripe Inc, San Francisco, CA" },
+  { id: "t4", merchant: "Figma Pro", transactionId: "INV_773920", amount: -15.00, date: shiftDay("Apr 07, 2026"), logo: logo("figma.com"), category: "Design", status: "completed", type: "expense", merchantInfo: "Figma Inc, San Francisco, CA", cardLast4: "7321" },
+  { id: "t5", merchant: "ChatGPT Plus", transactionId: "INV_920077", amount: -20.00, date: shiftDay("Apr 06, 2026"), logo: logo("openai.com"), category: "AI Tools", status: "completed", type: "expense", merchantInfo: "OpenAI LLC, San Francisco, CA", cardLast4: "4589" },
+  { id: "t6", merchant: "Google Workspace", transactionId: "INV_661204", amount: -12.00, date: shiftDay("Apr 05, 2026"), logo: logo("google.com"), category: "Productivity", status: "completed", type: "expense", merchantInfo: "Google LLC, Mountain View, CA", cardLast4: "4589" },
+  { id: "t7", merchant: "Client Payment", transactionId: "TXN_559831", amount: 8500.00, date: shiftDay("Apr 04, 2026"), logo: logo("paypal.com"), category: "Income", status: "completed", type: "income", merchantInfo: "PayPal Holdings, San Jose, CA" },
+  { id: "t8", merchant: "Uber", transactionId: "INV_882341", amount: -24.50, date: shiftDay("Apr 03, 2026"), logo: logo("uber.com"), category: "Transport", status: "completed", type: "expense", merchantInfo: "Uber Technologies, San Francisco, CA", cardLast4: "9012" },
+  { id: "t9", merchant: "Netflix", transactionId: "INV_773001", amount: -15.99, date: shiftDay("Apr 02, 2026"), logo: logo("netflix.com"), category: "Entertainment", status: "completed", type: "expense", merchantInfo: "Netflix Inc, Los Gatos, CA", cardLast4: "4589" },
+  { id: "t10", merchant: "Amazon", transactionId: "INV_990123", amount: -89.99, date: shiftDay("Apr 01, 2026"), logo: logo("amazon.com"), category: "Shopping", status: "completed", type: "expense", merchantInfo: "Amazon.com Inc, Seattle, WA", cardLast4: "4589" },
+  { id: "t11", merchant: "Starbucks", transactionId: "INV_445501", amount: -6.75, date: shiftDay("Mar 31, 2026"), logo: logo("starbucks.com"), category: "Food & Dining", status: "completed", type: "expense", cardLast4: "9012" },
+  { id: "t12", merchant: "DoorDash", transactionId: "INV_334112", amount: -32.40, date: shiftDay("Mar 30, 2026"), logo: logo("doordash.com"), category: "Food & Dining", status: "completed", type: "expense", cardLast4: "4589" },
+  { id: "t13", merchant: "Adobe Creative Cloud", transactionId: "INV_221098", amount: -54.99, date: shiftDay("Mar 29, 2026"), logo: logo("adobe.com"), category: "Design", status: "completed", type: "expense", merchantInfo: "Adobe Inc, San Jose, CA", cardLast4: "7321" },
+  { id: "t14", merchant: "Slack", transactionId: "INV_110987", amount: -8.75, date: shiftDay("Mar 28, 2026"), logo: logo("slack.com"), category: "Productivity", status: "completed", type: "expense", cardLast4: "4589" },
+  { id: "t15", merchant: "GitHub Pro", transactionId: "INV_998877", amount: -4.00, date: shiftDay("Mar 27, 2026"), logo: logo("github.com"), category: "Technology", status: "completed", type: "expense", merchantInfo: "GitHub Inc, San Francisco, CA", cardLast4: "4589" },
+  { id: "t16", merchant: "Notion", transactionId: "INV_887766", amount: -10.00, date: shiftDay("Mar 26, 2026"), logo: logo("notion.so"), category: "Productivity", status: "pending", type: "expense", cardLast4: "7321" },
+  { id: "t17", merchant: "Vercel Pro", transactionId: "INV_776655", amount: -20.00, date: shiftDay("Mar 25, 2026"), logo: logo("vercel.com"), category: "Technology", status: "completed", type: "expense", merchantInfo: "Vercel Inc, San Francisco, CA", cardLast4: "4589" },
+  { id: "t18", merchant: "LinkedIn Premium", transactionId: "INV_665544", amount: -29.99, date: shiftDay("Mar 24, 2026"), logo: logo("linkedin.com"), category: "Productivity", status: "completed", type: "expense", cardLast4: "9012" },
+  { id: "t19", merchant: "Apple iCloud+", transactionId: "INV_554433", amount: -2.99, date: shiftDay("Mar 23, 2026"), logo: logo("apple.com"), category: "Technology", status: "completed", type: "expense", cardLast4: "4589" },
+  { id: "t20", merchant: "Airbnb Booking", transactionId: "INV_443322", amount: -245.00, date: shiftDay("Mar 22, 2026"), logo: logo("airbnb.com"), category: "Travel", status: "completed", type: "expense", merchantInfo: "Airbnb Inc, San Francisco, CA", cardLast4: "9012" },
+  { id: "t21", merchant: "Freelance Project", transactionId: "TXN_332211", amount: 3200.00, date: shiftDay("Mar 21, 2026"), logo: logo("wise.com"), category: "Income", status: "completed", type: "income", merchantInfo: "Wise (TransferWise), London, UK" },
+  { id: "t22", merchant: "Target", transactionId: "INV_221100", amount: -67.43, date: shiftDay("Mar 20, 2026"), logo: logo("target.com"), category: "Shopping", status: "completed", type: "expense", cardLast4: "9012" },
+  { id: "t23", merchant: "Shell Gas", transactionId: "INV_110099", amount: -52.30, date: shiftDay("Mar 19, 2026"), logo: logo("shell.com"), category: "Transport", status: "failed", type: "expense", notes: "Card declined — insufficient funds", cardLast4: "7321" },
+  { id: "t24", merchant: "Delta Airlines", transactionId: "INV_009988", amount: -389.00, date: shiftDay("Mar 18, 2026"), logo: logo("delta.com"), category: "Travel", status: "pending", type: "expense", merchantInfo: "Delta Air Lines, Atlanta, GA", cardLast4: "9012" },
+  { id: "t25", merchant: "Dividend — AAPL", transactionId: "TXN_889977", amount: 142.50, date: shiftDay("Mar 17, 2026"), logo: logo("apple.com"), category: "Income", status: "completed", type: "income", notes: `${lastQuarterLabel} dividend payment` },
 ]
+
+// ── Older history (≈3 months) so insights have real month-over-month data ──
+
+const RECURRING_CATEGORIES = new Set(["Entertainment", "Technology", "Design", "AI Tools", "Productivity", "Income"])
+
+const everydayMerchants = [
+  { merchant: "Starbucks", domain: "starbucks.com", category: "Food & Dining", min: 4, max: 9, chance: 0.22 },
+  { merchant: "DoorDash", domain: "doordash.com", category: "Food & Dining", min: 18, max: 46, chance: 0.12 },
+  { merchant: "Uber", domain: "uber.com", category: "Transport", min: 11, max: 34, chance: 0.12 },
+  { merchant: "Shell Gas", domain: "shell.com", category: "Transport", min: 38, max: 66, chance: 0.04 },
+  { merchant: "Amazon", domain: "amazon.com", category: "Shopping", min: 14, max: 120, chance: 0.08 },
+  { merchant: "Target", domain: "target.com", category: "Shopping", min: 19, max: 90, chance: 0.05 },
+]
+
+const txId = (prefix: string) => `${prefix}_${String(Math.floor(100000 + random() * 900000))}`
+const cards = ["4589", "9012", "7321"]
+
+function generateHistory(): FullTransaction[] {
+  const history: FullTransaction[] = []
+
+  // Subscriptions and income repeat on the same cadence one and two months back
+  for (const back of [30, 60]) {
+    for (const t of fullTransactions) {
+      if (!RECURRING_CATEGORIES.has(t.category) || t.status !== "completed") continue
+      const amount = t.type === "income" ? Math.round(t.amount * (0.85 + random() * 0.3) * 100) / 100 : t.amount
+      history.push({
+        ...t,
+        id: `${t.id}-m${back}`,
+        transactionId: txId(t.type === "income" ? "TXN" : "INV"),
+        amount,
+        date: formatDay(subDays(parseDay(t.date), back)),
+        notes: undefined,
+      })
+    }
+  }
+
+  // Everyday spending across the last 90 days
+  for (let back = 1; back <= 90; back++) {
+    const day = formatDay(subDays(today, back))
+    for (const m of everydayMerchants) {
+      if (random() > m.chance) continue
+      const amount = Math.round((m.min + random() * (m.max - m.min)) * 100) / 100
+      history.push({
+        id: `g${back}-${m.merchant.replace(/\W/g, "").toLowerCase()}`,
+        merchant: m.merchant,
+        transactionId: txId("INV"),
+        amount: -amount,
+        date: day,
+        logo: logo(m.domain),
+        category: m.category,
+        status: "completed",
+        type: "expense",
+        cardLast4: cards[Math.floor(random() * cards.length)],
+      })
+    }
+  }
+  return history
+}
+
+/** Every seeded transaction, newest first — the starting point for the demo store */
+export const transactionHistory: FullTransaction[] = [...fullTransactions, ...generateHistory()].sort(
+  (a, b) => parseDay(b.date).getTime() - parseDay(a.date).getTime()
+)
 
 // ══════════════════════════════════════════════════════════════════════════════
 // PAGE DATA: Cards
@@ -332,7 +342,7 @@ export type CardData = {
   dailyLimit: number
   monthlySpend: number
   monthlyLimit: number
-  color: string
+  theme: CardTheme
 }
 
 export const cardsData: CardData[] = [
@@ -350,7 +360,7 @@ export const cardsData: CardData[] = [
     dailyLimit: 5000,
     monthlySpend: 2180,
     monthlyLimit: 10000,
-    color: "bg-primary text-primary-foreground",
+    theme: "aurora",
   },
   {
     id: "c2",
@@ -366,7 +376,7 @@ export const cardsData: CardData[] = [
     dailyLimit: 3000,
     monthlySpend: 890,
     monthlyLimit: 8000,
-    color: "bg-secondary text-secondary-foreground",
+    theme: "midnight",
   },
   {
     id: "c3",
@@ -382,7 +392,7 @@ export const cardsData: CardData[] = [
     dailyLimit: 1000,
     monthlySpend: 456,
     monthlyLimit: 3000,
-    color: "bg-muted text-foreground",
+    theme: "ocean",
   },
   {
     id: "c4",
@@ -398,7 +408,7 @@ export const cardsData: CardData[] = [
     dailyLimit: 10000,
     monthlySpend: 0,
     monthlyLimit: 25000,
-    color: "bg-card text-card-foreground ring-1 ring-border",
+    theme: "lagoon",
   },
 ]
 
@@ -411,18 +421,17 @@ export type SpendingHeatmapDay = { date: string; amount: number }
 // Generate 365 days of spending data programmatically
 function generateHeatmap(): SpendingHeatmapDay[] {
   const data: SpendingHeatmapDay[] = []
-  const start = new Date(2025, 3, 14) // Apr 14, 2025
+  const start = subDays(today, 364) // the last 365 days, ending today
   for (let i = 0; i < 365; i++) {
-    const d = new Date(start)
-    d.setDate(d.getDate() + i)
+    const d = addDays(start, i)
     const dayOfWeek = d.getDay()
     // Weekdays spend more, weekends less, some zero days
     const base = dayOfWeek === 0 || dayOfWeek === 6 ? 40 : 120
     const noise = Math.sin(i * 0.3) * 60 + Math.cos(i * 0.7) * 40
     const amount = Math.max(0, Math.round(base + noise + (i % 7) * 15))
     data.push({
-      date: d.toISOString().split("T")[0],
-      amount: Math.random() > 0.1 ? amount : 0, // 10% zero days
+      date: isoDay(d),
+      amount: random() > 0.1 ? amount : 0, // 10% zero days
     })
   }
   return data
@@ -460,18 +469,18 @@ export type RecurringCharge = {
 }
 
 export const recurringCharges: RecurringCharge[] = [
-  { id: "r1", merchant: "Spotify", logo: logo("spotify.com"), amount: 9.99, frequency: "monthly", nextDate: "May 10, 2026", status: "wanted", category: "Entertainment" },
-  { id: "r2", merchant: "Netflix", logo: logo("netflix.com"), amount: 15.99, frequency: "monthly", nextDate: "May 02, 2026", status: "wanted", category: "Entertainment" },
-  { id: "r3", merchant: "ChatGPT Plus", logo: logo("openai.com"), amount: 20.00, frequency: "monthly", nextDate: "May 06, 2026", status: "wanted", category: "AI Tools" },
-  { id: "r4", merchant: "Figma Pro", logo: logo("figma.com"), amount: 15.00, frequency: "monthly", nextDate: "May 07, 2026", status: "wanted", category: "Design" },
-  { id: "r5", merchant: "Adobe CC", logo: logo("adobe.com"), amount: 54.99, frequency: "monthly", nextDate: "Apr 29, 2026", status: "review", category: "Design" },
-  { id: "r6", merchant: "AWS", logo: "/logos/aws-amazon-com.svg", amount: 120.00, frequency: "monthly", nextDate: "May 09, 2026", status: "wanted", category: "Technology" },
-  { id: "r7", merchant: "Google Workspace", logo: logo("google.com"), amount: 12.00, frequency: "monthly", nextDate: "May 05, 2026", status: "wanted", category: "Productivity" },
-  { id: "r8", merchant: "Slack", logo: logo("slack.com"), amount: 8.75, frequency: "monthly", nextDate: "Apr 28, 2026", status: "review", category: "Productivity" },
-  { id: "r9", merchant: "GitHub Pro", logo: logo("github.com"), amount: 4.00, frequency: "monthly", nextDate: "Apr 27, 2026", status: "wanted", category: "Technology" },
-  { id: "r10", merchant: "Notion", logo: logo("notion.so"), amount: 10.00, frequency: "monthly", nextDate: "Apr 26, 2026", status: "unset", category: "Productivity" },
-  { id: "r11", merchant: "LinkedIn Premium", logo: logo("linkedin.com"), amount: 29.99, frequency: "monthly", nextDate: "Apr 24, 2026", status: "review", category: "Productivity" },
-  { id: "r12", merchant: "iCloud+", logo: logo("apple.com"), amount: 2.99, frequency: "monthly", nextDate: "Apr 23, 2026", status: "wanted", category: "Technology" },
+  { id: "r1", merchant: "Spotify", logo: logo("spotify.com"), amount: 9.99, frequency: "monthly", nextDate: shiftDay("May 10, 2026"), status: "wanted", category: "Entertainment" },
+  { id: "r2", merchant: "Netflix", logo: logo("netflix.com"), amount: 15.99, frequency: "monthly", nextDate: shiftDay("May 02, 2026"), status: "wanted", category: "Entertainment" },
+  { id: "r3", merchant: "ChatGPT Plus", logo: logo("openai.com"), amount: 20.00, frequency: "monthly", nextDate: shiftDay("May 06, 2026"), status: "wanted", category: "AI Tools" },
+  { id: "r4", merchant: "Figma Pro", logo: logo("figma.com"), amount: 15.00, frequency: "monthly", nextDate: shiftDay("May 07, 2026"), status: "wanted", category: "Design" },
+  { id: "r5", merchant: "Adobe CC", logo: logo("adobe.com"), amount: 54.99, frequency: "monthly", nextDate: shiftDay("Apr 29, 2026"), status: "review", category: "Design" },
+  { id: "r6", merchant: "AWS", logo: "/logos/aws-amazon-com.svg", amount: 120.00, frequency: "monthly", nextDate: shiftDay("May 09, 2026"), status: "wanted", category: "Technology" },
+  { id: "r7", merchant: "Google Workspace", logo: logo("google.com"), amount: 12.00, frequency: "monthly", nextDate: shiftDay("May 05, 2026"), status: "wanted", category: "Productivity" },
+  { id: "r8", merchant: "Slack", logo: logo("slack.com"), amount: 8.75, frequency: "monthly", nextDate: shiftDay("Apr 28, 2026"), status: "review", category: "Productivity" },
+  { id: "r9", merchant: "GitHub Pro", logo: logo("github.com"), amount: 4.00, frequency: "monthly", nextDate: shiftDay("Apr 27, 2026"), status: "wanted", category: "Technology" },
+  { id: "r10", merchant: "Notion", logo: logo("notion.so"), amount: 10.00, frequency: "monthly", nextDate: shiftDay("Apr 26, 2026"), status: "unset", category: "Productivity" },
+  { id: "r11", merchant: "LinkedIn Premium", logo: logo("linkedin.com"), amount: 29.99, frequency: "monthly", nextDate: shiftDay("Apr 24, 2026"), status: "review", category: "Productivity" },
+  { id: "r12", merchant: "iCloud+", logo: logo("apple.com"), amount: 2.99, frequency: "monthly", nextDate: shiftDay("Apr 23, 2026"), status: "wanted", category: "Technology" },
 ]
 
 export type MonthComparison = { category: string; thisMonth: number; lastMonth: number }
@@ -511,7 +520,7 @@ function generateSparkline(base: number, volatility: number): number[] {
   const points: number[] = []
   let price = base
   for (let i = 0; i < 30; i++) {
-    price += (Math.sin(i * 0.5) * volatility) + (Math.random() - 0.48) * volatility
+    price += (Math.sin(i * 0.5) * volatility) + (random() - 0.48) * volatility
     points.push(Math.round(price * 100) / 100)
   }
   return points
@@ -537,7 +546,7 @@ export const holdings: Holding[] = [
   { id: "h5", symbol: "TSLA", name: "Tesla Inc", quantity: 12, avgBuyPrice: 245.00, currentPrice: 218.90, logo: logo("tesla.com"), sparklineData: generateSparkline(218, 8), sector: "Automotive" },
   { id: "h6", symbol: "NVDA", name: "NVIDIA", quantity: 20, avgBuyPrice: 480.00, currentPrice: 892.50, logo: logo("nvidia.com"), sparklineData: generateSparkline(892, 15), sector: "Technology" },
   { id: "h7", symbol: "META", name: "Meta Platforms", quantity: 6, avgBuyPrice: 320.00, currentPrice: 510.20, logo: logo("meta.com"), sparklineData: generateSparkline(510, 7), sector: "Technology" },
-  { id: "h8", symbol: "V", name: "Visa Inc", quantity: 18, avgBuyPrice: 260.00, currentPrice: 285.30, logo: logo("visa.com"), sparklineData: generateSparkline(285, 2), sector: "Financial" },
+  { id: "h8", symbol: "V", name: "Visa Inc", quantity: 18, avgBuyPrice: 260.00, currentPrice: 285.30, logo: "/logos/visa-com.svg", sparklineData: generateSparkline(285, 2), sector: "Financial" },
 ]
 
 export type WatchlistItem = {
@@ -558,21 +567,30 @@ export const watchlistItems: WatchlistItem[] = [
   { id: "w5", symbol: "SQ", name: "Block Inc", currentPrice: 78.20, dayChange: 2.15, logo: logo("block.xyz"), sparklineData: generateSparkline(78, 3) },
 ]
 
+// Stocks offered by the watchlist's "Add to Watchlist" menu
+export const watchlistSuggestions: WatchlistItem[] = [
+  { id: "w6", symbol: "SPOT", name: "Spotify", currentPrice: 612.30, dayChange: 0.94, logo: logo("spotify.com"), sparklineData: generateSparkline(612, 9) },
+  { id: "w7", symbol: "UBER", name: "Uber", currentPrice: 84.15, dayChange: -0.42, logo: logo("uber.com"), sparklineData: generateSparkline(84, 2) },
+  { id: "w8", symbol: "ABNB", name: "Airbnb", currentPrice: 131.70, dayChange: 1.08, logo: logo("airbnb.com"), sparklineData: generateSparkline(131, 3) },
+  { id: "w9", symbol: "SBUX", name: "Starbucks", currentPrice: 96.40, dayChange: -0.61, logo: logo("starbucks.com"), sparklineData: generateSparkline(96, 2) },
+  { id: "w10", symbol: "COIN", name: "Coinbase", currentPrice: 254.80, dayChange: 3.27, logo: logo("coinbase.com"), sparklineData: generateSparkline(254, 8) },
+]
+
 export type PortfolioHistoryPoint = { date: string; portfolio: number; sp500: number }
 
 export const portfolioHistory: PortfolioHistoryPoint[] = [
-  { date: "May 2025", portfolio: 42000, sp500: 44000 },
-  { date: "Jun 2025", portfolio: 44500, sp500: 45200 },
-  { date: "Jul 2025", portfolio: 43800, sp500: 44800 },
-  { date: "Aug 2025", portfolio: 46200, sp500: 46100 },
-  { date: "Sep 2025", portfolio: 48100, sp500: 47300 },
-  { date: "Oct 2025", portfolio: 47500, sp500: 46800 },
-  { date: "Nov 2025", portfolio: 51200, sp500: 48900 },
-  { date: "Dec 2025", portfolio: 53800, sp500: 50200 },
-  { date: "Jan 2026", portfolio: 52400, sp500: 49800 },
-  { date: "Feb 2026", portfolio: 55100, sp500: 51400 },
-  { date: "Mar 2026", portfolio: 58200, sp500: 53100 },
-  { date: "Apr 2026", portfolio: 61450, sp500: 54800 },
+  { date: shiftMonth("May 2025"), portfolio: 42000, sp500: 44000 },
+  { date: shiftMonth("Jun 2025"), portfolio: 44500, sp500: 45200 },
+  { date: shiftMonth("Jul 2025"), portfolio: 43800, sp500: 44800 },
+  { date: shiftMonth("Aug 2025"), portfolio: 46200, sp500: 46100 },
+  { date: shiftMonth("Sep 2025"), portfolio: 48100, sp500: 47300 },
+  { date: shiftMonth("Oct 2025"), portfolio: 47500, sp500: 46800 },
+  { date: shiftMonth("Nov 2025"), portfolio: 51200, sp500: 48900 },
+  { date: shiftMonth("Dec 2025"), portfolio: 53800, sp500: 50200 },
+  { date: shiftMonth("Jan 2026"), portfolio: 52400, sp500: 49800 },
+  { date: shiftMonth("Feb 2026"), portfolio: 55100, sp500: 51400 },
+  { date: shiftMonth("Mar 2026"), portfolio: 58200, sp500: 53100 },
+  { date: shiftMonth("Apr 2026"), portfolio: 61450, sp500: 54800 },
 ]
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -610,20 +628,21 @@ export type SavingsGoal = {
 }
 
 export const savingsGoals: SavingsGoal[] = [
-  { id: "g1", name: "Vacation Fund", targetAmount: 5000, currentAmount: 2400, deadline: "Aug 2026", iconName: "palm-tree", monthlyContribution: 400 },
-  { id: "g2", name: "Emergency Fund", targetAmount: 15000, currentAmount: 8200, deadline: "Dec 2026", iconName: "shield", monthlyContribution: 850 },
-  { id: "g3", name: "New Car", targetAmount: 35000, currentAmount: 12500, deadline: "Jun 2027", iconName: "car", monthlyContribution: 1500 },
-  { id: "g4", name: "Home Down Payment", targetAmount: 60000, currentAmount: 24000, deadline: "Dec 2027", iconName: "home", monthlyContribution: 2000 },
+  { id: "g1", name: "Vacation Fund", targetAmount: 5000, currentAmount: 2400, deadline: shiftMonth("Aug 2026"), iconName: "palm-tree", monthlyContribution: 400 },
+  { id: "g2", name: "Emergency Fund", targetAmount: 15000, currentAmount: 8200, deadline: shiftMonth("Dec 2026"), iconName: "shield", monthlyContribution: 850 },
+  { id: "g3", name: "New Car", targetAmount: 35000, currentAmount: 12500, deadline: shiftMonth("Jun 2027"), iconName: "car", monthlyContribution: 1500 },
+  { id: "g4", name: "Home Down Payment", targetAmount: 60000, currentAmount: 24000, deadline: shiftMonth("Dec 2027"), iconName: "home", monthlyContribution: 2000 },
 ]
 
 export type DailySpending = { date: string; amount: number }
 
-export const dailySpending: DailySpending[] = Array.from({ length: 30 }, (_, i) => {
-  const d = new Date(2026, 3, i + 1) // April 2026
+// Current month, with spending recorded up to and including today
+export const dailySpending: DailySpending[] = Array.from({ length: getDaysInMonth(today) }, (_, i) => {
+  const d = addDays(startOfMonth(today), i)
   const dayOfWeek = d.getDay()
   const base = dayOfWeek === 0 || dayOfWeek === 6 ? 45 : 95
-  const amount = Math.round(base + Math.sin(i * 0.8) * 40 + Math.random() * 30)
-  return { date: d.toISOString().split("T")[0], amount: i < 13 ? amount : 0 }
+  const amount = Math.round(base + Math.sin(i * 0.8) * 40 + random() * 30)
+  return { date: isoDay(d), amount: i < today.getDate() ? amount : 0 }
 })
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -748,16 +767,16 @@ export type TransferRecord = {
 }
 
 export const transferRecords: TransferRecord[] = [
-  { id: "tr1", type: "sent", contactName: "Sarah Chen", contactAvatar: avatar(1), amount: 250.00, date: "Apr 12, 2026", status: "completed", note: "Dinner split" },
-  { id: "tr2", type: "received", contactName: "Marcus Johnson", contactAvatar: avatar(3), amount: 1200.00, date: "Apr 11, 2026", status: "completed", note: "Freelance payment" },
-  { id: "tr3", type: "sent", contactName: "Elena Rodriguez", contactAvatar: avatar(5), amount: 85.00, date: "Apr 10, 2026", status: "completed", note: "Concert tickets" },
-  { id: "tr4", type: "scheduled", contactName: "James Wilson", contactAvatar: avatar(8), amount: 500.00, date: "Apr 20, 2026", status: "scheduled", note: "Monthly rent share" },
-  { id: "tr5", type: "received", contactName: "Aisha Patel", contactAvatar: avatar(9), amount: 340.00, date: "Apr 09, 2026", status: "completed", note: "Birthday gift" },
-  { id: "tr6", type: "sent", contactName: "David Kim", contactAvatar: avatar(11), amount: 45.00, date: "Apr 08, 2026", status: "pending" },
-  { id: "tr7", type: "scheduled", contactName: "Sarah Chen", contactAvatar: avatar(1), amount: 250.00, date: "May 01, 2026", status: "scheduled", note: "Monthly dinner budget" },
-  { id: "tr8", type: "received", contactName: "Olivia Brown", contactAvatar: avatar(16), amount: 175.00, date: "Apr 07, 2026", status: "completed" },
-  { id: "tr9", type: "sent", contactName: "Liam Murphy", contactAvatar: avatar(12), amount: 920.00, date: "Apr 06, 2026", status: "completed", note: "Equipment purchase" },
-  { id: "tr10", type: "scheduled", contactName: "Elena Rodriguez", contactAvatar: avatar(5), amount: 150.00, date: "Apr 25, 2026", status: "scheduled", note: "Gym membership split" },
+  { id: "tr1", type: "sent", contactName: "Sarah Chen", contactAvatar: avatar(1), amount: 250.00, date: shiftDay("Apr 12, 2026"), status: "completed", note: "Dinner split" },
+  { id: "tr2", type: "received", contactName: "Marcus Johnson", contactAvatar: avatar(3), amount: 1200.00, date: shiftDay("Apr 11, 2026"), status: "completed", note: "Freelance payment" },
+  { id: "tr3", type: "sent", contactName: "Elena Rodriguez", contactAvatar: avatar(5), amount: 85.00, date: shiftDay("Apr 10, 2026"), status: "completed", note: "Concert tickets" },
+  { id: "tr4", type: "scheduled", contactName: "James Wilson", contactAvatar: avatar(8), amount: 500.00, date: shiftDay("Apr 20, 2026"), status: "scheduled", note: "Monthly rent share" },
+  { id: "tr5", type: "received", contactName: "Aisha Patel", contactAvatar: avatar(9), amount: 340.00, date: shiftDay("Apr 09, 2026"), status: "completed", note: "Birthday gift" },
+  { id: "tr6", type: "sent", contactName: "David Kim", contactAvatar: avatar(11), amount: 45.00, date: shiftDay("Apr 08, 2026"), status: "pending" },
+  { id: "tr7", type: "scheduled", contactName: "Sarah Chen", contactAvatar: avatar(1), amount: 250.00, date: shiftDay("May 01, 2026"), status: "scheduled", note: "Monthly dinner budget" },
+  { id: "tr8", type: "received", contactName: "Olivia Brown", contactAvatar: avatar(16), amount: 175.00, date: shiftDay("Apr 07, 2026"), status: "completed" },
+  { id: "tr9", type: "sent", contactName: "Liam Murphy", contactAvatar: avatar(12), amount: 920.00, date: shiftDay("Apr 06, 2026"), status: "completed", note: "Equipment purchase" },
+  { id: "tr10", type: "scheduled", contactName: "Elena Rodriguez", contactAvatar: avatar(5), amount: 150.00, date: shiftDay("Apr 25, 2026"), status: "scheduled", note: "Gym membership split" },
 ]
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -789,13 +808,13 @@ export const notifications: Notification[] = [
   { id: "n2", type: "security", title: "New Login Detected", description: "Your account was accessed from a new device in San Francisco, CA", time: "1 hour ago", read: false, icon: "shield-alert" },
   { id: "n3", type: "transaction", title: "Card Payment", description: "You paid $120.00 to AWS Cloud Services", time: "3 hours ago", read: false, icon: "credit-card" },
   { id: "n4", type: "system", title: "Budget Alert", description: "You've reached 90% of your Food & Dining budget", time: "5 hours ago", read: true, icon: "alert-triangle" },
-  { id: "n5", type: "promotion", title: "Upgrade to Vault Pro", description: "Get advanced analytics, unlimited virtual cards, and priority support", time: "1 day ago", read: true, icon: "sparkles" },
+  { id: "n5", type: "promotion", title: "Upgrade to Pennywise Pro", description: "Get advanced analytics, unlimited virtual cards, and priority support", time: "1 day ago", read: true, icon: "sparkles" },
   { id: "n6", type: "transaction", title: "Transfer Completed", description: "Your transfer of $250.00 to Sarah Chen was successful", time: "1 day ago", read: true, icon: "check-circle" },
   { id: "n7", type: "security", title: "Password Changed", description: "Your account password was successfully updated", time: "2 days ago", read: true, icon: "lock" },
   { id: "n8", type: "transaction", title: "Subscription Renewed", description: "Spotify Premium was renewed for $9.99", time: "2 days ago", read: true, icon: "repeat" },
   { id: "n9", type: "system", title: "Card Expiring Soon", description: "Your Travel Credit card ending in 7321 expires next month", time: "3 days ago", read: true, icon: "clock" },
-  { id: "n10", type: "transaction", title: "Dividend Received", description: "AAPL Q1 2026 dividend payment of $142.50", time: "5 days ago", read: true, icon: "trending-up" },
-  { id: "n11", type: "system", title: "Monthly Statement Ready", description: "Your March 2026 account statement is available for download", time: "1 week ago", read: true, icon: "file-text" },
+  { id: "n10", type: "transaction", title: "Dividend Received", description: `AAPL ${lastQuarterLabel} dividend payment of $142.50`, time: "5 days ago", read: true, icon: "trending-up" },
+  { id: "n11", type: "system", title: "Monthly Statement Ready", description: `Your ${lastMonthLabel} account statement is available for download`, time: "1 week ago", read: true, icon: "file-text" },
   { id: "n12", type: "security", title: "Two-Factor Enabled", description: "Two-factor authentication has been enabled on your account", time: "2 weeks ago", read: true, icon: "shield-check" },
 ]
 
@@ -937,14 +956,88 @@ export type CryptoTransaction = {
 }
 
 export const cryptoTransactions: CryptoTransaction[] = [
-  { id: "ct1", type: "buy", coin: "Bitcoin", coinSymbol: "BTC", logo: "/logos/bitcoin-com.png", amount: 0.05, value: 3421.02, date: "Apr 12, 2026", status: "completed" },
-  { id: "ct2", type: "sell", coin: "Ethereum", coinSymbol: "ETH", logo: "/logos/ethereum-org.png", amount: 2.0, value: 7690.40, date: "Apr 11, 2026", status: "completed" },
-  { id: "ct3", type: "swap", coin: "SOL → ETH", coinSymbol: "SOL", logo: "/logos/solana-com.png", amount: 10, value: 1789.00, date: "Apr 10, 2026", status: "completed" },
-  { id: "ct4", type: "receive", coin: "Bitcoin", coinSymbol: "BTC", logo: "/logos/bitcoin-com.png", amount: 0.1, value: 6842.05, date: "Apr 09, 2026", status: "completed" },
-  { id: "ct5", type: "buy", coin: "Solana", coinSymbol: "SOL", logo: "/logos/solana-com.png", amount: 20, value: 3578.00, date: "Apr 08, 2026", status: "completed" },
-  { id: "ct6", type: "send", coin: "Ethereum", coinSymbol: "ETH", logo: "/logos/ethereum-org.png", amount: 0.5, value: 1922.60, date: "Apr 07, 2026", status: "pending" },
-  { id: "ct7", type: "buy", coin: "Dogecoin", coinSymbol: "DOGE", logo: "/logos/dogecoin-com.png", amount: 10000, value: 1245.00, date: "Apr 06, 2026", status: "completed" },
-  { id: "ct8", type: "sell", coin: "Cardano", coinSymbol: "ADA", logo: "/logos/cardano-org.png", amount: 2000, value: 904.20, date: "Apr 05, 2026", status: "completed" },
+  { id: "ct1", type: "buy", coin: "Bitcoin", coinSymbol: "BTC", logo: "/logos/bitcoin-com.png", amount: 0.05, value: 3421.02, date: shiftDay("Apr 12, 2026"), status: "completed" },
+  { id: "ct2", type: "sell", coin: "Ethereum", coinSymbol: "ETH", logo: "/logos/ethereum-org.png", amount: 2.0, value: 7690.40, date: shiftDay("Apr 11, 2026"), status: "completed" },
+  { id: "ct3", type: "swap", coin: "SOL → ETH", coinSymbol: "SOL", logo: "/logos/solana-com.png", amount: 10, value: 1789.00, date: shiftDay("Apr 10, 2026"), status: "completed" },
+  { id: "ct4", type: "receive", coin: "Bitcoin", coinSymbol: "BTC", logo: "/logos/bitcoin-com.png", amount: 0.1, value: 6842.05, date: shiftDay("Apr 09, 2026"), status: "completed" },
+  { id: "ct5", type: "buy", coin: "Solana", coinSymbol: "SOL", logo: "/logos/solana-com.png", amount: 20, value: 3578.00, date: shiftDay("Apr 08, 2026"), status: "completed" },
+  { id: "ct6", type: "send", coin: "Ethereum", coinSymbol: "ETH", logo: "/logos/ethereum-org.png", amount: 0.5, value: 1922.60, date: shiftDay("Apr 07, 2026"), status: "pending" },
+  { id: "ct7", type: "buy", coin: "Dogecoin", coinSymbol: "DOGE", logo: "/logos/dogecoin-com.png", amount: 10000, value: 1245.00, date: shiftDay("Apr 06, 2026"), status: "completed" },
+  { id: "ct8", type: "sell", coin: "Cardano", coinSymbol: "ADA", logo: "/logos/cardano-org.png", amount: 2000, value: 904.20, date: shiftDay("Apr 05, 2026"), status: "completed" },
+]
+
+// ══════════════════════════════════════════════════════════════════════════════
+// WIDGET DATA: Financial Health Score
+// ══════════════════════════════════════════════════════════════════════════════
+
+export type HealthFactor = {
+  id: string
+  label: string
+  score: number
+  maxScore: number
+  status: "excellent" | "good" | "fair" | "poor"
+  description: string
+}
+
+export const financialHealthScore = {
+  overall: 78,
+  trend: "up" as const,
+  trendDelta: 3,
+  factors: [
+    { id: "hf1", label: "Savings Rate", score: 85, maxScore: 100, status: "excellent" as const, description: "You save 28% of your income — well above the 20% target" },
+    { id: "hf2", label: "Spending Habits", score: 72, maxScore: 100, status: "good" as const, description: "Mostly within budget. Dining out is slightly over." },
+    { id: "hf3", label: "Debt Ratio", score: 90, maxScore: 100, status: "excellent" as const, description: "Debt-to-income ratio of 8% — very healthy" },
+    { id: "hf4", label: "Investment Growth", score: 68, maxScore: 100, status: "good" as const, description: "Portfolio up 12.4% YTD. Diversification is solid." },
+    { id: "hf5", label: "Emergency Fund", score: 55, maxScore: 100, status: "fair" as const, description: "3.2 months of expenses covered — aim for 6 months" },
+    { id: "hf6", label: "Bill Payments", score: 95, maxScore: 100, status: "excellent" as const, description: "All bills paid on time for 12 consecutive months" },
+  ] as HealthFactor[],
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// PAGE DATA: Help & Support
+// ══════════════════════════════════════════════════════════════════════════════
+
+export type FaqItem = {
+  id: string
+  question: string
+  answer: string
+  category: "account" | "payments" | "security" | "billing" | "general"
+}
+
+export const faqItems: FaqItem[] = [
+  { id: "faq1", category: "account", question: "How do I link a new bank account?", answer: "Go to the Accounts page, click \"Link New Account\", and follow the secure verification steps. We use 256-bit encryption and never store your bank credentials directly." },
+  { id: "faq2", category: "payments", question: "How long do transfers take to process?", answer: "Domestic transfers typically complete within 1-2 business days. International transfers take 3-5 business days depending on the destination country and currency." },
+  { id: "faq3", category: "security", question: "How do I enable two-factor authentication?", answer: "Navigate to Settings > Security, and toggle the Two-Factor Authentication switch. You can use an authenticator app or SMS verification. We recommend using an authenticator app for better security." },
+  { id: "faq4", category: "billing", question: "What's included in Pennywise Pro?", answer: "Pennywise Pro includes unlimited bank connections, advanced analytics & AI insights, unlimited virtual cards, priority support, custom budget categories, and export to CSV & PDF. It's $12/month." },
+  { id: "faq5", category: "account", question: "Can I have multiple currency accounts?", answer: "Yes! You can hold accounts in multiple currencies including USD, EUR, GBP, and more. Currency conversion happens at mid-market rates with a small transparent fee." },
+  { id: "faq6", category: "security", question: "What happens if I notice suspicious activity?", answer: "Immediately freeze your cards from the Cards page, change your password in Settings > Security, and contact our support team. We have a dedicated fraud team that operates 24/7." },
+  { id: "faq7", category: "payments", question: "Is there a limit on transfers?", answer: "Free accounts can transfer up to $5,000/day and $25,000/month. Pro accounts have limits of $25,000/day and $100,000/month. Contact support for higher limits." },
+  { id: "faq8", category: "general", question: "How do I export my transaction history?", answer: "Go to the Transactions page, select the transactions you want to export using the checkboxes, then click the \"Export CSV\" button in the floating action bar." },
+  { id: "faq9", category: "billing", question: "Can I cancel my Pro subscription anytime?", answer: "Yes, you can cancel at any time from Settings > Billing. Your Pro features will remain active until the end of your current billing period." },
+  { id: "faq10", category: "general", question: "Does Pennywise support cryptocurrency trading?", answer: "Yes! The Crypto section supports buying, selling, swapping, and tracking major cryptocurrencies including BTC, ETH, SOL, and more. Real-time price tracking updates every 3 seconds." },
+]
+
+export type SupportTicket = {
+  id: string
+  subject: string
+  status: "open" | "in-progress" | "resolved"
+  priority: "low" | "medium" | "high"
+  createdAt: string
+  lastUpdate: string
+}
+
+export const supportTickets: SupportTicket[] = [
+  { id: "tk1", subject: "Transfer stuck in pending", status: "in-progress", priority: "high", createdAt: shiftDay("Apr 10, 2026"), lastUpdate: shiftDay("Apr 12, 2026") },
+  { id: "tk2", subject: "Request higher transfer limit", status: "open", priority: "medium", createdAt: shiftDay("Apr 08, 2026"), lastUpdate: shiftDay("Apr 08, 2026") },
+  { id: "tk3", subject: "Tax document request", status: "resolved", priority: "low", createdAt: shiftDay("Mar 15, 2026"), lastUpdate: shiftDay("Mar 18, 2026") },
+]
+
+export const systemStatus = [
+  { name: "Core Banking", status: "operational" as const },
+  { name: "Card Payments", status: "operational" as const },
+  { name: "Crypto Trading", status: "degraded" as const },
+  { name: "International Transfers", status: "operational" as const },
+  { name: "Mobile App", status: "operational" as const },
 ]
 
 export const cryptoPriceHistory = [
