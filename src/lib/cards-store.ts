@@ -2,72 +2,30 @@
 
 import * as React from "react"
 import { cardsData, type CardData } from "@/data/seed"
-import { isCardTheme, type CardTheme } from "@/lib/card-themes"
+import type { CardTheme } from "@/lib/card-themes"
 
 // Payment cards shared by the dashboard card stack and the Cards page.
-// Saved in localStorage like the rest of the demo data; the server and first
-// client render use the seed cards, so there is no hydration mismatch.
-
-const STORAGE_KEY = "pennywise-cards-v1"
+// Kept in memory like the rest of the demo data, so a refresh restores the seed
+// cards.
 
 const seedCards = (): CardData[] => structuredClone(cardsData)
 
 let cards: CardData[] = seedCards()
 const serverCards = cards
-let loaded = false
 const listeners = new Set<() => void>()
-
-function isCard(v: unknown): v is CardData {
-  if (!v || typeof v !== "object") return false
-  const c = v as Partial<CardData>
-  return (
-    typeof c.id === "string" &&
-    typeof c.name === "string" &&
-    typeof c.last4 === "string" &&
-    (c.network === "visa" || c.network === "mastercard") &&
-    (c.type === "physical" || c.type === "virtual") &&
-    isCardTheme(c.theme)
-  )
-}
-
-function load() {
-  if (loaded || typeof window === "undefined") return
-  loaded = true
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY)
-    if (!raw) return
-    const saved: unknown = JSON.parse(raw)
-    if (Array.isArray(saved) && saved.length > 0 && saved.every(isCard)) cards = saved
-  } catch {
-    // Blocked or corrupt storage: keep the seed cards
-  }
-}
 
 function commit(next: CardData[]) {
   cards = next
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(cards))
-  } catch {
-    // Storage full or blocked: the change still applies for this visit
-  }
   listeners.forEach((l) => l())
 }
 
 function subscribe(listener: () => void) {
-  load()
   listeners.add(listener)
   return () => listeners.delete(listener)
 }
 
 export function useCards() {
-  return React.useSyncExternalStore(
-    subscribe,
-    () => {
-      load()
-      return cards
-    },
-    () => serverCards
-  )
+  return React.useSyncExternalStore(subscribe, () => cards, () => serverCards)
 }
 
 const digits = (n: number) => Array.from({ length: n }, () => Math.floor(Math.random() * 10)).join("")
@@ -105,20 +63,12 @@ export function createCard({
 
 export const cardsActions = {
   add(card: CardData) {
-    load()
     commit([...cards, card])
   },
   update(id: string, patch: Partial<CardData>) {
-    load()
     commit(cards.map((c) => (c.id === id ? { ...c, ...patch } : c)))
   },
   reset() {
-    cards = seedCards()
-    try {
-      window.localStorage.removeItem(STORAGE_KEY)
-    } catch {
-      // ignore
-    }
-    listeners.forEach((l) => l())
+    commit(seedCards())
   },
 }

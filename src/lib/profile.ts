@@ -2,9 +2,8 @@
 
 import * as React from "react"
 
-// Demo profile for the signed-in user. Saved in localStorage like the rest of
-// the demo data; the server and first client render use the defaults, so there
-// is no hydration mismatch.
+// Demo profile for the signed-in user. Kept in memory like the rest of the demo
+// data, so a refresh restores the defaults.
 
 export const AVATAR_COLORS = {
   violet: "from-indigo-500 to-fuchsia-500",
@@ -42,50 +41,19 @@ export const PROFILE_FACTS = {
   customerId: "PW-204871",
 }
 
-const STORAGE_KEY = "pennywise-profile-v1"
-
 let profile: Profile = DEFAULT_PROFILE
-let loaded = false
 const listeners = new Set<() => void>()
-
-function load() {
-  if (loaded || typeof window === "undefined") return
-  loaded = true
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY)
-    if (!raw) return
-    const saved = JSON.parse(raw) as Partial<Profile>
-    const str = (v: unknown, fallback: string) => (typeof v === "string" && v.trim() ? v : fallback)
-    profile = {
-      name: str(saved.name, DEFAULT_PROFILE.name),
-      email: str(saved.email, DEFAULT_PROFILE.email),
-      phone: str(saved.phone, DEFAULT_PROFILE.phone),
-      location: str(saved.location, DEFAULT_PROFILE.location),
-      occupation: str(saved.occupation, DEFAULT_PROFILE.occupation),
-      avatarColor:
-        typeof saved.avatarColor === "string" && saved.avatarColor in AVATAR_COLORS
-          ? (saved.avatarColor as AvatarColor)
-          : DEFAULT_PROFILE.avatarColor,
-    }
-  } catch {
-    // Blocked or corrupt storage: keep the defaults
-  }
-}
 
 function emit() {
   listeners.forEach((l) => l())
 }
 
 function subscribe(listener: () => void) {
-  load()
   listeners.add(listener)
   return () => listeners.delete(listener)
 }
 
-const getSnapshot = () => {
-  load()
-  return profile
-}
+const getSnapshot = () => profile
 const getServerSnapshot = () => DEFAULT_PROFILE
 
 export function useProfile() {
@@ -94,22 +62,11 @@ export function useProfile() {
 
 export const profileActions = {
   update(patch: Partial<Profile>) {
-    load()
     profile = { ...profile, ...patch }
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(profile))
-    } catch {
-      // Storage full or blocked: the change still applies for this visit
-    }
     emit()
   },
   reset() {
     profile = DEFAULT_PROFILE
-    try {
-      window.localStorage.removeItem(STORAGE_KEY)
-    } catch {
-      // ignore
-    }
     emit()
   },
 }

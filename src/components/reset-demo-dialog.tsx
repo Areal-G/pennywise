@@ -41,7 +41,7 @@ export function ResetDemoDialog({
           <DialogTitle>Reset demo data?</DialogTitle>
           <DialogDescription>
             This removes the transactions, budgets, savings goals, cards and profile details you
-            added or changed in this browser and restores the sample data. Your currency choice is kept.
+            added or changed during this visit and restores the sample data. Your currency choice is kept.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>

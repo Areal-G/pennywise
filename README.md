@@ -18,6 +18,8 @@ Where the money went, what renews next, and whether you are on track.
 
 </div>
 
+> **Demo branch.** This is the hosted portfolio demo (Netlify). It uses no database and no external services: the sample data lives in memory and resets on refresh, and Ask Pennywise answers offline. The full app lives on `main`.
+
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="readme/hero-dark.png">
   <img alt="Pennywise dashboard on desktop with spending analytics on mobile" src="readme/hero-light.png">
@@ -37,15 +39,15 @@ pnpm install && pnpm dev   # then open http://localhost:3000
 
 There is no sign-up. The root route opens the dashboard as the sample user, Alex Morgan.
 
-- Add, edit or delete transactions, budgets and goals. Changes persist in `localStorage`.
+- Add, edit or delete transactions, budgets and goals. Changes live in memory and reset when you refresh.
 - Reset everything from **Settings → Demo data** or from the command palette (`Ctrl/⌘ + K`).
-- **Ask Pennywise** works offline out of the box. Add an `ANTHROPIC_API_KEY` to get streamed answers from Claude instead.
+- **Ask Pennywise** answers offline from the sample data.
 
 ## Features
 
 ### Ask Pennywise, an assistant grounded in your own data
 
-Ask "Where did my money go this month?" and get an answer built from your actual transactions, budgets and goals. With a key, a route handler streams Claude's reply. Without one, an offline responder computes the same answers locally, so the feature always demos.
+Ask "Where did my money go this month?" and get an answer built from your actual transactions, budgets and goals. In this demo an offline responder computes the answers locally, with no API calls.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="readme/assistant-dark.png">
@@ -137,7 +139,7 @@ Pennywise uses one design system end to end: shadcn/ui primitives on Base UI, th
 | Motion | Motion 12 | Count-ups and draw-ins with reduced-motion support |
 | Drag and drop | @dnd-kit/core 6, @dnd-kit/sortable 10 | Keyboard-accessible widget reordering |
 | 3D | three 0.183, three-globe, @react-three/fiber | The sign-in globe |
-| AI (optional) | @anthropic-ai/sdk, `claude-sonnet-5-5` | Streamed, data-grounded answers |
+| AI | Offline responder (`src/lib/assistant.ts`) | Data-grounded answers with no API calls |
 | Dates | date-fns 4, react-day-picker 9 | Relative mock dates and pickers |
 
 ## Architecture
@@ -146,53 +148,25 @@ All pages are client-rendered React on top of one seeded data module. A small st
 
 ```mermaid
 flowchart LR
-    Seed["src/data/seed.ts<br/>seeded mock data"] --> Store["src/lib/demo-store.ts<br/>useSyncExternalStore + localStorage"]
+    Seed["src/data/seed.ts<br/>seeded mock data"] --> Store["src/lib/demo-store.ts<br/>useSyncExternalStore, in memory"]
     Store --> Derive["src/lib/insights.ts<br/>src/lib/planning.ts"]
     Derive --> Pages["App Router pages<br/>(dashboard) route group"]
     Pages --> Chat["Ask Pennywise chat"]
-    Chat -->|"key set"| Route["/api/assistant<br/>route handler"]
-    Route -->|"text stream"| Claude["Claude API"]
-    Chat -->|"no key"| Offline["src/lib/assistant.ts<br/>offline responder"]
+    Chat --> Offline["src/lib/assistant.ts<br/>offline responder"]
 ```
 
 Key decisions and trade-offs:
 
 - **Deterministic mock data.** The seed uses a seeded PRNG, so server and client render identical numbers and there are no hydration mismatches. Dates are authored relative to "today" and shifted at runtime, so the demo never looks stale.
-- **A store instead of a backend.** Edits live in `localStorage` under a versioned key. The trade-off is single-device data, in exchange for zero setup. The store has the same shape a real API would, so it can be swapped later.
-- **AI without lock-in.** `GET /api/assistant` tells the page whether a key is configured. The key never reaches the browser, and without it the same questions are answered by deterministic code.
+- **A store instead of a backend.** Edits live in memory and reset on refresh, so every visitor gets the same clean demo with zero setup. The store has the same shape a real API would, so it can be swapped later.
 - **One currency internally.** Amounts stay in USD and are converted only at display time by `<Money>`, which keeps totals and exports consistent.
 
 ## Engineering highlights
 
 - **Type safety.** TypeScript strict mode; domain types (`FullTransaction`, `BudgetCategory`, `SavingsGoal`) flow from the seed through the store to every component.
-- **Hydration-safe client state.** The server and the first client render always use the seed. The saved copy swaps in after hydration through `useSyncExternalStore`.
-- **Defensive I/O.** Every storage read and write is wrapped in `try/catch` with validation of the saved shape, so private windows, full storage and corrupt JSON all degrade to the seed.
-- **Input hardening on the AI route.** Only `user`/`assistant` turns pass, history is capped at 20 turns and 4,000 characters each, the data snapshot at 40 KB, and API errors map to friendly messages without leaking details.
+- **Hydration-safe client state.** The server and the first client render always use the seed. Edits flow through `useSyncExternalStore`.
 - **Security.** CSV export neutralises formula injection (`=`, `+`, `-`, `@` prefixes). No trackers, no `eval`, no secrets in the client.
 - **Quality gates.** `tsc --noEmit` and ESLint pass with zero warnings, and CI runs type check, lint and build on every push and pull request.
-
-The demo store reads saved data defensively and never trusts its shape:
-
-```ts
-// src/lib/demo-store.ts
-function load() {
-  if (loaded || typeof window === "undefined") return
-  loaded = true
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY)
-    if (!raw) return
-    const saved = JSON.parse(raw) as Partial<DemoState>
-    state = {
-      transactions: Array.isArray(saved.transactions) ? saved.transactions : defaultState.transactions,
-      budgets: Array.isArray(saved.budgets) ? saved.budgets : defaultState.budgets,
-      goals: Array.isArray(saved.goals) ? saved.goals : defaultState.goals,
-      currency: isCurrency(saved.currency) ? saved.currency : "USD",
-    }
-  } catch {
-    // Corrupt or blocked storage: fall back to the seed data
-  }
-}
-```
 
 A seeded PRNG keeps server and client output identical:
 
@@ -233,15 +207,7 @@ Open `http://localhost:3000`. You should land on the dashboard with insights, a 
 <details>
 <summary><b>Environment variables</b></summary>
 
-None are required. To enable live AI answers:
-
-```bash
-cp .env.example .env.local
-```
-
-| Variable | Required | Description |
-|---|---|---|
-| `ANTHROPIC_API_KEY` | No | Enables Claude answers in Ask Pennywise. Without it the assistant runs in offline demo mode. Server-side only. |
+None. The demo needs no environment variables.
 
 </details>
 
@@ -268,7 +234,7 @@ src/
 │   ├── (dashboard)/         dashboard, accounts, transactions, cards, transfers,
 │   │                        investments, crypto, analytics, budgets, assistant,
 │   │                        subscriptions, goals, cash-flow, reconcile, settings
-│   ├── api/assistant/       optional Claude streaming route
+│   ├── api/assistant/       reports that the assistant runs offline
 │   └── layout.tsx           metadata, theme provider, fonts
 ├── components/
 │   ├── dashboard/           widgets and the drag-and-drop customizer
@@ -299,7 +265,7 @@ Both pass with zero errors and zero warnings, and CI (`.github/workflows/ci.yml`
 
 ## Deployment
 
-A standard Next.js project: deploy to Vercel or any Node host (`pnpm build && pnpm start`) with no configuration. Set `ANTHROPIC_API_KEY` only if you want live assistant answers; that route is the only part that needs a server runtime.
+Deployed on Netlify with `netlify.toml` (Next.js runtime auto-detected). No environment variables are needed.
 
 ## Roadmap
 

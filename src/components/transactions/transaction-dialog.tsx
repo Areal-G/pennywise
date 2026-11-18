@@ -163,7 +163,7 @@ export function TransactionDialog({
           <DialogHeader>
             <DialogTitle>{transaction ? "Edit transaction" : "Add transaction"}</DialogTitle>
             <DialogDescription>
-              Demo data is saved in this browser only. Amounts are in {currency}.
+              Demo data resets when you refresh. Amounts are in {currency}.
             </DialogDescription>
           </DialogHeader>
 

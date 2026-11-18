@@ -9,13 +9,12 @@ import {
   type FullTransaction,
   type SavingsGoal,
 } from "@/data/seed"
-import { currencySymbol, formatMoney, isCurrency, type Currency, type MoneyOptions } from "@/lib/currency"
+import { currencySymbol, formatMoney, type Currency, type MoneyOptions } from "@/lib/currency"
 import { parseDay } from "@/lib/mock"
 
-// Editable demo data, persisted in localStorage so visitors can play with the
-// app. The server (and the first client render) always use the seed data; the
-// saved copy is swapped in after hydration via useSyncExternalStore, so there
-// is never a hydration mismatch.
+// Editable demo data, kept in memory only: every visitor starts from the seed
+// data and a refresh resets it. The server and the first client render share
+// the same seed state, so there is never a hydration mismatch.
 
 export type DemoData = {
   transactions: FullTransaction[]
@@ -24,8 +23,6 @@ export type DemoData = {
 }
 
 type DemoState = DemoData & { currency: Currency }
-
-const STORAGE_KEY = "pennywise-demo-v1"
 
 const seedData = (): DemoData => ({
   transactions: structuredClone(transactionHistory),
@@ -36,51 +33,19 @@ const seedData = (): DemoData => ({
 const defaultState: DemoState = { ...seedData(), currency: "USD" }
 
 let state: DemoState = defaultState
-let loaded = false
 const listeners = new Set<() => void>()
-
-function load() {
-  if (loaded || typeof window === "undefined") return
-  loaded = true
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY)
-    if (!raw) return
-    const saved = JSON.parse(raw) as Partial<DemoState>
-    state = {
-      transactions: Array.isArray(saved.transactions) ? saved.transactions : defaultState.transactions,
-      budgets: Array.isArray(saved.budgets) ? saved.budgets : defaultState.budgets,
-      goals: Array.isArray(saved.goals) ? saved.goals : defaultState.goals,
-      currency: isCurrency(saved.currency) ? saved.currency : "USD",
-    }
-  } catch {
-    // Corrupt or blocked storage: fall back to the seed data
-  }
-}
-
-function persist() {
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
-  } catch {
-    // Storage full or unavailable (private mode): keep working in memory
-  }
-}
 
 function setState(update: (prev: DemoState) => DemoState) {
   state = update(state)
-  persist()
   listeners.forEach((l) => l())
 }
 
 function subscribe(listener: () => void) {
-  load()
   listeners.add(listener)
   return () => listeners.delete(listener)
 }
 
-const getSnapshot = () => {
-  load()
-  return state
-}
+const getSnapshot = () => state
 const getServerSnapshot = () => defaultState
 
 export function useDemoStore() {

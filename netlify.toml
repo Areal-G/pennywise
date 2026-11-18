@@ -1,0 +1,8 @@
+# Portfolio demo: no database, no external services, no environment variables.
+[build]
+  command = "pnpm build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "24"
+  NEXT_TELEMETRY_DISABLED = "1"

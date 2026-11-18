@@ -180,14 +180,14 @@ function ProfileForm({ profile }: { profile: Profile }) {
       location: form.location.trim(),
       occupation: form.occupation.trim(),
     })
-    toast("Profile saved", { description: "Saved in this browser for the demo.", variant: "success" })
+    toast("Profile saved", { description: "Saved for this demo session.", variant: "success" })
   }
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Edit profile</CardTitle>
-        <CardDescription>Changes are saved in this browser only.</CardDescription>
+        <CardDescription>Changes last until you refresh the page.</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSave} className="space-y-6">
@@ -730,7 +730,7 @@ function DemoDataTab() {
       <CardHeader>
         <CardTitle>Demo data</CardTitle>
         <CardDescription>
-          Everything you add, edit or delete in Pennywise is saved in this browser only, so you can
+          Everything you add, edit or delete in Pennywise is kept in memory until you refresh, so you can
           explore freely. Reset to start again with the sample data.
         </CardDescription>
       </CardHeader>
