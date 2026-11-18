@@ -30,7 +30,13 @@ import type { DateRange } from "react-day-picker"
 import { Money, useChartAnimation } from "@/components/money"
 import { useMoney } from "@/lib/demo-store"
 
-function SquareDot({ cx, cy, fill, opacity = 1, size = 6 }: DotProps & { size?: number; opacity?: number }) {
+function SquareDot({
+  cx,
+  cy,
+  fill,
+  opacity = 1,
+  size = 6,
+}: Pick<DotProps, "cx" | "cy"> & { fill?: string; size?: number; opacity?: number }) {
   if (cx == null || cy == null) return null
   return (
     <rect
