@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/chart"
 import { Area, AreaChart, ReferenceLine, XAxis, YAxis } from "recharts"
 import { dailySpending } from "@/data/seed"
-import { useDemoStore, useMoney } from "@/lib/demo-store"
+import { useFinanceStore, useMoney } from "@/lib/finance-store"
 import { useChartAnimation } from "@/components/money"
 import { AlertTriangleIcon, CheckCircle2Icon } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -23,7 +23,7 @@ const chartConfig = {
 } satisfies ChartConfig
 
 export function MonthProjection() {
-  const { budgets } = useDemoStore()
+  const { budgets } = useFinanceStore()
   const { format } = useMoney()
   const chartAnimation = useChartAnimation()
   const stats = useMemo(() => {

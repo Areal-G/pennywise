@@ -1,6 +1,6 @@
 "use client"
 
-import { demoActions, useDemoStore } from "@/lib/demo-store"
+import { financeActions, useFinanceStore } from "@/lib/finance-store"
 import { CURRENCIES, currencySymbol, isCurrency } from "@/lib/currency"
 import { cn } from "@/lib/utils"
 import {
@@ -11,11 +11,11 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
-/** Display-currency picker (USD / EUR / GBP, fixed demo rates) */
+/** Display-currency picker (USD / EUR / GBP, fixed rates) */
 export function CurrencySwitcher({ className, size = "sm" }: { className?: string; size?: "sm" | "default" }) {
-  const { currency } = useDemoStore()
+  const { currency } = useFinanceStore()
   return (
-    <Select value={currency} onValueChange={(v) => isCurrency(v) && demoActions.setCurrency(v)}>
+    <Select value={currency} onValueChange={(v) => isCurrency(v) && financeActions.setCurrency(v)}>
       <SelectTrigger size={size} aria-label="Display currency" className={cn("tabular-nums", className)}>
         <SelectValue />
       </SelectTrigger>

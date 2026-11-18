@@ -2,8 +2,8 @@
 
 import * as React from "react"
 
-// Demo profile for the signed-in user. Saved in localStorage like the rest of
-// the demo data; the server and first client render use the defaults, so there
+// Profile for the signed-in user. Saved in localStorage like the rest of
+// the app data; the server and first client render use the defaults, so there
 // is no hydration mismatch.
 
 export const AVATAR_COLORS = {
@@ -35,7 +35,7 @@ export const DEFAULT_PROFILE: Profile = {
   avatarColor: "violet",
 }
 
-/** Static demo facts shown on the profile */
+/** Static account facts shown on the profile */
 export const PROFILE_FACTS = {
   memberSince: "March 2023",
   plan: "Free",
@@ -100,15 +100,6 @@ export const profileActions = {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(profile))
     } catch {
       // Storage full or blocked: the change still applies for this visit
-    }
-    emit()
-  },
-  reset() {
-    profile = DEFAULT_PROFILE
-    try {
-      window.localStorage.removeItem(STORAGE_KEY)
-    } catch {
-      // ignore
     }
     emit()
   },

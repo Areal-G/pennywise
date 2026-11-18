@@ -6,7 +6,7 @@ import { motion, useReducedMotion } from "motion/react"
 import { CalendarIcon, FlagIcon, PencilIcon, PiggyBankIcon, PlusIcon, TargetIcon, WalletIcon } from "lucide-react"
 
 import type { SavingsGoal } from "@/data/seed"
-import { useDemoStore, useMoney } from "@/lib/demo-store"
+import { useFinanceStore, useMoney } from "@/lib/finance-store"
 import { goalPlan } from "@/lib/planning"
 import { today } from "@/lib/mock"
 import { cn } from "@/lib/utils"
@@ -50,7 +50,7 @@ function ProgressRing({ percent, className }: { percent: number; className: stri
 }
 
 export function GoalsPage() {
-  const { goals } = useDemoStore()
+  const { goals } = useFinanceStore()
   const { format: money } = useMoney()
   const [dialog, setDialog] = React.useState<"edit" | "funds" | null>(null)
   const [selected, setSelected] = React.useState<SavingsGoal | null>(null)

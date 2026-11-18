@@ -1,5 +1,5 @@
 // Offline "Ask Pennywise" responder: rule-based answers computed from the same
-// facts the Claude route receives, so the demo works without an API key.
+// facts the Claude route receives, so the assistant works without an API key.
 
 import type { FinanceFacts } from "@/lib/planning"
 
@@ -123,8 +123,8 @@ function savingTips(f: FinanceFacts, fmt: Fmt, target?: number) {
   return `Here's where I'd look first, based on your last 30 days:\n${list(lines)}\n\nTogether that's roughly **${fmt(total)} a month**.${goal}`
 }
 
-/** Answer a question from the user's demo data (plain text with **bold** and "- " bullets) */
-export function demoAnswer(question: string, f: FinanceFacts, fmt: Fmt): string {
+/** Answer a question from the user's data (plain text with **bold** and "- " bullets) */
+export function offlineAnswer(question: string, f: FinanceFacts, fmt: Fmt): string {
   const q = question.toLowerCase()
   const amount = Number(q.match(/\$?\s?(\d[\d,]*)/)?.[1]?.replace(/,/g, ""))
 

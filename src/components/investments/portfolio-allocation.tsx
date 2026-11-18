@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/chart"
 import { holdings } from "@/data/seed"
 import { useChartAnimation } from "@/components/money"
-import { useMoney } from "@/lib/demo-store"
+import { useMoney } from "@/lib/finance-store"
 
 const SECTOR_COLORS = [
   "var(--color-chart-1)",

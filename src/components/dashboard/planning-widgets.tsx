@@ -7,7 +7,7 @@ import { format } from "date-fns"
 import { ArrowRightIcon, ArrowUpIcon, MoonIcon, SparklesIcon } from "lucide-react"
 
 import { daysUntil, isUnused, subscriptionSummary, upcomingRenewals } from "@/lib/planning"
-import { useMoney } from "@/lib/demo-store"
+import { useMoney } from "@/lib/finance-store"
 import { SUGGESTED_PROMPTS } from "@/lib/assistant"
 import { cn } from "@/lib/utils"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"

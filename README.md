@@ -12,7 +12,6 @@ Where the money went, what renews next, and whether you are on track.
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6?logo=typescript&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06b6d4?logo=tailwindcss&logoColor=white)
 ![shadcn/ui](https://img.shields.io/badge/shadcn%2Fui-Base_UI-111)
-![Demo](https://img.shields.io/badge/demo-no_login_needed-4f46e5)
 
 [Features](#features) · [Design](#design) · [Screenshots](#screenshots) · [Tech stack](#tech-stack) · [Getting started](#getting-started)
 
@@ -29,23 +28,22 @@ Pennywise is a single-user finance workspace. It covers the day-to-day (accounts
 
 It is built for people who want answers rather than raw tables, and it is designed as a portfolio-grade reference for a data-dense Next.js dashboard. It runs on a realistic seeded data set, so it works with zero setup: no database, no auth provider and no API keys.
 
-## Try the demo
+## Quick start
 
 ```bash
 pnpm install && pnpm dev   # then open http://localhost:3000
 ```
 
-There is no sign-up. The root route opens the dashboard as the sample user, Alex Morgan.
+The root route opens the dashboard. Sign-in and sign-up are UI only until the auth and persistence layer on the roadmap lands.
 
 - Add, edit or delete transactions, budgets and goals. Changes persist in `localStorage`.
-- Reset everything from **Settings → Demo data** or from the command palette (`Ctrl/⌘ + K`).
 - **Ask Pennywise** works offline out of the box. Add an `ANTHROPIC_API_KEY` to get streamed answers from Claude instead.
 
 ## Features
 
 ### Ask Pennywise, an assistant grounded in your own data
 
-Ask "Where did my money go this month?" and get an answer built from your actual transactions, budgets and goals. With a key, a route handler streams Claude's reply. Without one, an offline responder computes the same answers locally, so the feature always demos.
+Ask "Where did my money go this month?" and get an answer built from your actual transactions, budgets and goals. With a key, a route handler streams Claude's reply. Without one, an offline responder computes the same answers locally, so the feature always works.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="readme/assistant-dark.png">
@@ -130,7 +128,7 @@ Pennywise uses one design system end to end: shadcn/ui primitives on Base UI, th
 | Layer | Technology | Why |
 |---|---|---|
 | Framework | Next.js 16.2 (App Router, Turbopack) | File-based routing with route groups, one server route for the AI |
-| UI runtime | React 19.2, TypeScript 5 (strict) | `useSyncExternalStore` for the demo store, strict types everywhere |
+| UI runtime | React 19.2, TypeScript 5 (strict) | `useSyncExternalStore` for the finance store, strict types everywhere |
 | Components | shadcn/ui on Base UI 1.4, lucide-react, cmdk | Owned, accessible primitives; the command palette |
 | Styling | Tailwind CSS 4, tw-animate-css, next-themes | OKLCH design tokens and class-based theming |
 | Charts | Recharts 3.8 | Composable charts that read the same tokens |
@@ -146,7 +144,7 @@ All pages are client-rendered React on top of one seeded data module. A small st
 
 ```mermaid
 flowchart LR
-    Seed["src/data/seed.ts<br/>seeded mock data"] --> Store["src/lib/demo-store.ts<br/>useSyncExternalStore + localStorage"]
+    Seed["src/data/seed.ts<br/>seeded mock data"] --> Store["src/lib/finance-store.ts<br/>useSyncExternalStore + localStorage"]
     Store --> Derive["src/lib/insights.ts<br/>src/lib/planning.ts"]
     Derive --> Pages["App Router pages<br/>(dashboard) route group"]
     Pages --> Chat["Ask Pennywise chat"]
@@ -157,7 +155,7 @@ flowchart LR
 
 Key decisions and trade-offs:
 
-- **Deterministic mock data.** The seed uses a seeded PRNG, so server and client render identical numbers and there are no hydration mismatches. Dates are authored relative to "today" and shifted at runtime, so the demo never looks stale.
+- **Deterministic mock data.** The seed uses a seeded PRNG, so server and client render identical numbers and there are no hydration mismatches. Dates are authored relative to "today" and shifted at runtime, so the data never looks stale.
 - **A store instead of a backend.** Edits live in `localStorage` under a versioned key. The trade-off is single-device data, in exchange for zero setup. The store has the same shape a real API would, so it can be swapped later.
 - **AI without lock-in.** `GET /api/assistant` tells the page whether a key is configured. The key never reaches the browser, and without it the same questions are answered by deterministic code.
 - **One currency internally.** Amounts stay in USD and are converted only at display time by `<Money>`, which keeps totals and exports consistent.
@@ -171,17 +169,17 @@ Key decisions and trade-offs:
 - **Security.** CSV export neutralises formula injection (`=`, `+`, `-`, `@` prefixes). No trackers, no `eval`, no secrets in the client.
 - **Quality gates.** `tsc --noEmit` and ESLint pass with zero warnings, and CI runs type check, lint and build on every push and pull request.
 
-The demo store reads saved data defensively and never trusts its shape:
+The finance store reads saved data defensively and never trusts its shape:
 
 ```ts
-// src/lib/demo-store.ts
+// src/lib/finance-store.ts
 function load() {
   if (loaded || typeof window === "undefined") return
   loaded = true
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY)
     if (!raw) return
-    const saved = JSON.parse(raw) as Partial<DemoState>
+    const saved = JSON.parse(raw) as Partial<FinanceState>
     state = {
       transactions: Array.isArray(saved.transactions) ? saved.transactions : defaultState.transactions,
       budgets: Array.isArray(saved.budgets) ? saved.budgets : defaultState.budgets,
@@ -241,7 +239,7 @@ cp .env.example .env.local
 
 | Variable | Required | Description |
 |---|---|---|
-| `ANTHROPIC_API_KEY` | No | Enables Claude answers in Ask Pennywise. Without it the assistant runs in offline demo mode. Server-side only. |
+| `ANTHROPIC_API_KEY` | No | Enables Claude answers in Ask Pennywise. Without it the assistant answers offline. Server-side only. |
 
 </details>
 
@@ -278,7 +276,7 @@ src/
 │   └── command-palette.tsx  Ctrl/⌘ + K
 ├── data/seed.ts             sample user, accounts, transactions, holdings
 └── lib/
-    ├── demo-store.ts        persisted user edits
+    ├── finance-store.ts     persisted user edits
     ├── insights.ts          dashboard insight cards
     ├── planning.ts          subscription, goal and cash-flow maths
     ├── assistant.ts         offline assistant answers

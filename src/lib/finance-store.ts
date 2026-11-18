@@ -12,30 +12,29 @@ import {
 import { currencySymbol, formatMoney, isCurrency, type Currency, type MoneyOptions } from "@/lib/currency"
 import { parseDay } from "@/lib/mock"
 
-// Editable demo data, persisted in localStorage so visitors can play with the
-// app. The server (and the first client render) always use the seed data; the
-// saved copy is swapped in after hydration via useSyncExternalStore, so there
-// is never a hydration mismatch.
+// Editable finance data, persisted in localStorage. The server (and the first
+// client render) always use the seed data; the saved copy is swapped in after
+// hydration via useSyncExternalStore, so there is never a hydration mismatch.
 
-export type DemoData = {
+export type FinanceData = {
   transactions: FullTransaction[]
   budgets: BudgetCategory[]
   goals: SavingsGoal[]
 }
 
-type DemoState = DemoData & { currency: Currency }
+type FinanceState = FinanceData & { currency: Currency }
 
-const STORAGE_KEY = "pennywise-demo-v1"
+const STORAGE_KEY = "pennywise-data-v1"
 
-const seedData = (): DemoData => ({
+const seedData = (): FinanceData => ({
   transactions: structuredClone(transactionHistory),
   budgets: structuredClone(budgetCategories),
   goals: structuredClone(savingsGoals),
 })
 
-const defaultState: DemoState = { ...seedData(), currency: "USD" }
+const defaultState: FinanceState = { ...seedData(), currency: "USD" }
 
-let state: DemoState = defaultState
+let state: FinanceState = defaultState
 let loaded = false
 const listeners = new Set<() => void>()
 
@@ -45,7 +44,7 @@ function load() {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY)
     if (!raw) return
-    const saved = JSON.parse(raw) as Partial<DemoState>
+    const saved = JSON.parse(raw) as Partial<FinanceState>
     state = {
       transactions: Array.isArray(saved.transactions) ? saved.transactions : defaultState.transactions,
       budgets: Array.isArray(saved.budgets) ? saved.budgets : defaultState.budgets,
@@ -65,7 +64,7 @@ function persist() {
   }
 }
 
-function setState(update: (prev: DemoState) => DemoState) {
+function setState(update: (prev: FinanceState) => FinanceState) {
   state = update(state)
   persist()
   listeners.forEach((l) => l())
@@ -83,14 +82,14 @@ const getSnapshot = () => {
 }
 const getServerSnapshot = () => defaultState
 
-export function useDemoStore() {
+export function useFinanceStore() {
   return React.useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
 }
 
 const byDateDesc = (a: FullTransaction, b: FullTransaction) =>
   parseDay(b.date).getTime() - parseDay(a.date).getTime()
 
-export const demoActions = {
+export const financeActions = {
   saveTransaction(tx: FullTransaction) {
     setState((s) => {
       const exists = s.transactions.some((t) => t.id === tx.id)
@@ -127,17 +126,13 @@ export const demoActions = {
   setCurrency(currency: Currency) {
     setState((s) => ({ ...s, currency }))
   },
-  /** Restore the seed transactions, budgets and goals (keeps the currency preference) */
-  reset() {
-    setState((s) => ({ ...seedData(), currency: s.currency }))
-  },
 }
 
 export const newId = (prefix: string) => `${prefix}_${Date.now().toString(36)}`
 
-/** Format USD amounts in the visitor's chosen display currency */
+/** Format USD amounts in the chosen display currency */
 export function useMoney() {
-  const { currency } = useDemoStore()
+  const { currency } = useFinanceStore()
   return React.useMemo(
     () => ({
       currency,

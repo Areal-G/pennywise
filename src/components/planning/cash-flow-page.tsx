@@ -5,7 +5,7 @@ import { Bar, CartesianGrid, ComposedChart, Line, Pie, PieChart, XAxis, YAxis, C
 import { ArrowDownLeftIcon, ArrowUpRightIcon, PercentIcon, PiggyBankIcon } from "lucide-react"
 
 import { cashFlow, cashFlowSummary, INCOME_SOURCES } from "@/lib/planning"
-import { useMoney } from "@/lib/demo-store"
+import { useMoney } from "@/lib/finance-store"
 import { cn } from "@/lib/utils"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart"

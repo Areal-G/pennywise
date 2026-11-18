@@ -6,8 +6,7 @@ import { useTheme } from "next-themes"
 import { format, startOfMonth, subMonths } from "date-fns"
 import { today } from "@/lib/mock"
 import { CURRENCIES, currencySymbol, type Currency } from "@/lib/currency"
-import { demoActions, useDemoStore, useMoney } from "@/lib/demo-store"
-import { ResetDemoDialog } from "@/components/reset-demo-dialog"
+import { financeActions, useFinanceStore, useMoney } from "@/lib/finance-store"
 import { toast } from "@/components/ui/toaster"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -53,8 +52,6 @@ import {
   LaptopIcon,
   TabletIcon,
   SparklesIcon,
-  RotateCcwIcon,
-  DatabaseIcon,
   BadgeCheckIcon,
   MapPinIcon,
   BriefcaseIcon,
@@ -63,7 +60,7 @@ import {
   PhoneIcon,
 } from "lucide-react"
 
-type TabId = "profile" | "security" | "notifications" | "billing" | "appearance" | "data"
+type TabId = "profile" | "security" | "notifications" | "billing" | "appearance"
 
 const tabs: { id: TabId; label: string; icon: React.ReactNode }[] = [
   { id: "profile", label: "Profile", icon: <UserIcon className="size-4" /> },
@@ -71,14 +68,13 @@ const tabs: { id: TabId; label: string; icon: React.ReactNode }[] = [
   { id: "notifications", label: "Notifications", icon: <BellIcon className="size-4" /> },
   { id: "billing", label: "Billing", icon: <CreditCardIcon className="size-4" /> },
   { id: "appearance", label: "Appearance", icon: <PaletteIcon className="size-4" /> },
-  { id: "data", label: "Demo data", icon: <DatabaseIcon className="size-4" /> },
 ]
 
 // ── Profile Tab ──────────────────────────────────────────────────────────────
 
 function ProfileTab() {
   const profile = useProfile()
-  const { transactions, budgets, goals } = useDemoStore()
+  const { transactions, budgets, goals } = useFinanceStore()
 
   const stats = [
     { label: "Transactions", value: transactions.length },
@@ -180,7 +176,7 @@ function ProfileForm({ profile }: { profile: Profile }) {
       location: form.location.trim(),
       occupation: form.occupation.trim(),
     })
-    toast("Profile saved", { description: "Saved in this browser for the demo.", variant: "success" })
+    toast("Profile saved", { description: "Saved in this browser.", variant: "success" })
   }
 
   return (
@@ -237,26 +233,13 @@ function ProfileForm({ profile }: { profile: Profile }) {
             </p>
           )}
 
-          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-between">
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => {
-                profileActions.reset()
-                toast("Profile reset", { description: "Back to the Alex Morgan demo profile." })
-              }}
-            >
-              <RotateCcwIcon className="size-4" />
-              Reset to demo profile
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <Button type="button" variant="outline" disabled={!dirty} onClick={() => setForm(profile)}>
+              Cancel
             </Button>
-            <div className="flex flex-col-reverse gap-2 sm:flex-row">
-              <Button type="button" variant="outline" disabled={!dirty} onClick={() => setForm(profile)}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={!dirty}>
-                Save changes
-              </Button>
-            </div>
+            <Button type="submit" disabled={!dirty}>
+              Save changes
+            </Button>
           </div>
         </form>
       </CardContent>
@@ -444,7 +427,7 @@ function NotificationsTab() {
 const invoiceDate = (monthsAgo: number) =>
   format(startOfMonth(subMonths(today, monthsAgo)), "MMM dd, yyyy")
 
-// Saves a plain-text copy of the invoice (there is no PDF backend in the demo)
+// Saves a plain-text copy of the invoice
 function downloadInvoice(inv: { id: string; date: string; amount: string; status: string }) {
   const text = `Invoice ${inv.id}
 Date: ${inv.date}
@@ -538,7 +521,7 @@ function BillingTab() {
               <Button
                 onClick={() =>
                   toast("Pro trial started", {
-                    description: "Enjoy 14 days of Pro features. This demo doesn't charge your card.",
+                    description: "Enjoy 14 days of Pro features.",
                   })
                 }
               >
@@ -571,7 +554,7 @@ function BillingTab() {
               size="sm"
               onClick={() =>
                 toast("Payment method updates are disabled", {
-                  description: "This is a demo account, so no card details are stored.",
+                  description: "Billing is not connected, so no card details are stored.",
                   variant: "info",
                 })
               }
@@ -630,7 +613,7 @@ const emptySubscribe = () => () => {}
 
 function AppearanceTab() {
   const { theme, setTheme } = useTheme()
-  const { currency } = useDemoStore()
+  const { currency } = useFinanceStore()
   const mounted = React.useSyncExternalStore(emptySubscribe, () => true, () => false)
 
   const themes: { id: string; label: string; icon: React.ReactNode }[] = [
@@ -677,7 +660,7 @@ function AppearanceTab() {
       <CardHeader>
         <CardTitle>Currency</CardTitle>
         <CardDescription>
-          Show every amount in your preferred currency. Demo values are converted at fixed rates.
+          Show every amount in your preferred currency. Amounts are converted at fixed rates.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -688,7 +671,7 @@ function AppearanceTab() {
               type="button"
               role="radio"
               aria-checked={currency === c}
-              onClick={() => demoActions.setCurrency(c)}
+              onClick={() => financeActions.setCurrency(c)}
               className={cn(
                 "flex items-center gap-3 rounded-lg border-2 p-4 text-left transition-all hover:bg-muted/50",
                 currency === c ? "border-primary ring-2 ring-primary/20" : "border-border"
@@ -714,47 +697,6 @@ function AppearanceTab() {
   )
 }
 
-// ── Demo data Tab ────────────────────────────────────────────────────────────
-
-function DemoDataTab() {
-  const { transactions, budgets, goals } = useDemoStore()
-  const [confirmOpen, setConfirmOpen] = React.useState(false)
-  const stats = [
-    { label: "Transactions", value: transactions.length },
-    { label: "Budgets", value: budgets.length },
-    { label: "Savings goals", value: goals.length },
-  ]
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Demo data</CardTitle>
-        <CardDescription>
-          Everything you add, edit or delete in Pennywise is saved in this browser only, so you can
-          explore freely. Reset to start again with the sample data.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-3 gap-3">
-          {stats.map((s) => (
-            <div key={s.label} className="rounded-lg border p-3">
-              <p className="text-xs text-muted-foreground">{s.label}</p>
-              <p className="text-lg font-semibold tabular-nums">{s.value}</p>
-            </div>
-          ))}
-        </div>
-        <div className="flex justify-end">
-          <Button variant="destructive" onClick={() => setConfirmOpen(true)}>
-            <RotateCcwIcon className="size-3.5" />
-            Reset demo data
-          </Button>
-        </div>
-      </CardContent>
-      <ResetDemoDialog open={confirmOpen} onOpenChange={setConfirmOpen} />
-    </Card>
-  )
-}
-
 // ── Main Settings Page ───────────────────────────────────────────────────────
 
 export function SettingsPageClient() {
@@ -775,7 +717,6 @@ export function SettingsPageClient() {
     notifications: <NotificationsTab />,
     billing: <BillingTab />,
     appearance: <AppearanceTab />,
-    data: <DemoDataTab />,
   }
 
   return (

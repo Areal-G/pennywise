@@ -5,14 +5,12 @@ import { cardsData, type CardData } from "@/data/seed"
 import { isCardTheme, type CardTheme } from "@/lib/card-themes"
 
 // Payment cards shared by the dashboard card stack and the Cards page.
-// Saved in localStorage like the rest of the demo data; the server and first
+// Saved in localStorage like the rest of the app data; the server and first
 // client render use the seed cards, so there is no hydration mismatch.
 
 const STORAGE_KEY = "pennywise-cards-v1"
 
-const seedCards = (): CardData[] => structuredClone(cardsData)
-
-let cards: CardData[] = seedCards()
+let cards: CardData[] = structuredClone(cardsData)
 const serverCards = cards
 let loaded = false
 const listeners = new Set<() => void>()
@@ -72,7 +70,7 @@ export function useCards() {
 
 const digits = (n: number) => Array.from({ length: n }, () => Math.floor(Math.random() * 10)).join("")
 
-/** A new card with random demo details (call from an event handler) */
+/** A new card with random sample details (call from an event handler) */
 export function createCard({
   name,
   type,
@@ -111,14 +109,5 @@ export const cardsActions = {
   update(id: string, patch: Partial<CardData>) {
     load()
     commit(cards.map((c) => (c.id === id ? { ...c, ...patch } : c)))
-  },
-  reset() {
-    cards = seedCards()
-    try {
-      window.localStorage.removeItem(STORAGE_KEY)
-    } catch {
-      // ignore
-    }
-    listeners.forEach((l) => l())
   },
 }

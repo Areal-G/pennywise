@@ -25,7 +25,7 @@ import {
   yearlyCost,
   type Subscription,
 } from "@/lib/planning"
-import { useMoney } from "@/lib/demo-store"
+import { useMoney } from "@/lib/finance-store"
 import { cn } from "@/lib/utils"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"

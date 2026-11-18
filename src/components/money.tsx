@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { animate, useReducedMotion } from "motion/react"
-import { useMoney } from "@/lib/demo-store"
+import { useMoney } from "@/lib/finance-store"
 import type { MoneyOptions } from "@/lib/currency"
 
 type MoneyProps = MoneyOptions & {

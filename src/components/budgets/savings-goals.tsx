@@ -5,7 +5,7 @@ import { addMonths } from "date-fns"
 import { PencilIcon, PlusIcon } from "lucide-react"
 
 import type { SavingsGoal } from "@/data/seed"
-import { useDemoStore, useMoney } from "@/lib/demo-store"
+import { useFinanceStore, useMoney } from "@/lib/finance-store"
 import { today } from "@/lib/mock"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -29,7 +29,7 @@ function goalStatus(g: SavingsGoal) {
 }
 
 export function SavingsGoals() {
-  const { goals } = useDemoStore()
+  const { goals } = useFinanceStore()
   const { format } = useMoney()
   const [dialog, setDialog] = useState<"edit" | "funds" | null>(null)
   const [selected, setSelected] = useState<SavingsGoal | null>(null)

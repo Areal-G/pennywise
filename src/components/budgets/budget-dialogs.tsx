@@ -5,7 +5,7 @@ import { Trash2Icon } from "lucide-react"
 import { addMonths, format } from "date-fns"
 
 import type { BudgetCategory, SavingsGoal } from "@/data/seed"
-import { demoActions, newId, useMoney } from "@/lib/demo-store"
+import { financeActions, newId, useMoney } from "@/lib/finance-store"
 import { convertFromUsd, convertToUsd } from "@/lib/currency"
 import { today } from "@/lib/mock"
 import { cn } from "@/lib/utils"
@@ -119,14 +119,14 @@ export function BudgetDialog({
       budget: limit,
       spent,
     }
-    demoActions.saveBudget(saved)
+    financeActions.saveBudget(saved)
     toast(budget ? "Budget updated" : "Budget created", { description: saved.category, variant: "success" })
     onOpenChange(false)
   }
 
   function handleDelete() {
     if (!budget) return
-    demoActions.deleteBudget(budget.id)
+    financeActions.deleteBudget(budget.id)
     toast("Budget deleted", { description: budget.category })
     onOpenChange(false)
   }
@@ -263,14 +263,14 @@ export function GoalDialog({
       monthlyContribution: monthly,
       deadline: format(new Date(y, m - 1, 1), "MMM yyyy"),
     }
-    demoActions.saveGoal(saved)
+    financeActions.saveGoal(saved)
     toast(goal ? "Goal updated" : "Goal created", { description: saved.name, variant: "success" })
     onOpenChange(false)
   }
 
   function handleDelete() {
     if (!goal) return
-    demoActions.deleteGoal(goal.id)
+    financeActions.deleteGoal(goal.id)
     toast("Goal deleted", { description: goal.name })
     onOpenChange(false)
   }
@@ -395,7 +395,7 @@ export function AddFundsDialog({
     const usd = money.toUsd(amount)
     if (!(usd > 0)) return setError("Enter an amount greater than zero.")
     const currentAmount = Math.round((goal.currentAmount + usd) * 100) / 100
-    demoActions.saveGoal({ ...goal, currentAmount })
+    financeActions.saveGoal({ ...goal, currentAmount })
     toast(currentAmount >= goal.targetAmount ? "Goal reached! 🎉" : "Funds added", {
       description: `${fmt(usd)} added to ${goal.name}`,
       variant: "success",

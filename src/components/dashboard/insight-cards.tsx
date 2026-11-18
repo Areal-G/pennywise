@@ -6,7 +6,7 @@ import { motion } from "motion/react"
 import { ArrowUpRightIcon, LightbulbIcon, TrendingDownIcon, TrendingUpIcon } from "lucide-react"
 
 import { computeInsights, type InsightTone } from "@/lib/insights"
-import { useDemoStore } from "@/lib/demo-store"
+import { useFinanceStore } from "@/lib/finance-store"
 import { cn } from "@/lib/utils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Money } from "@/components/money"
@@ -27,7 +27,7 @@ const toneStyle: Record<InsightTone, { icon: typeof LightbulbIcon; className: st
 }
 
 export function InsightCards() {
-  const { transactions, budgets, goals } = useDemoStore()
+  const { transactions, budgets, goals } = useFinanceStore()
   const insights = useMemo(
     () => computeInsights(transactions, budgets, goals).slice(0, 4),
     [transactions, budgets, goals]

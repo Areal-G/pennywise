@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils"
 import { AVATAR_COLORS, initials, useProfile, type AvatarColor } from "@/lib/profile"
 
-/** The demo user's avatar: initials on a gradient (colour is picked in Settings → Profile) */
+/** The user's avatar: initials on a gradient (colour is picked in Settings → Profile) */
 export function UserAvatar({
   className,
   name,

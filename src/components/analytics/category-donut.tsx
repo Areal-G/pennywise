@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/chart"
 import { categoryBreakdowns } from "@/data/seed"
 import { Money, useChartAnimation } from "@/components/money"
-import { useMoney } from "@/lib/demo-store"
+import { useMoney } from "@/lib/finance-store"
 
 const SUBCATEGORY_COLORS = [
   "var(--color-chart-1)",

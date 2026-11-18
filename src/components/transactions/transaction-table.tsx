@@ -14,7 +14,7 @@ import {
 import { toast } from "@/components/ui/toaster"
 import { cn } from "@/lib/utils"
 import type { FullTransaction } from "@/data/seed"
-import { useMoney } from "@/lib/demo-store"
+import { useMoney } from "@/lib/finance-store"
 import { MerchantLogo } from "@/components/merchant-logo"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -131,7 +131,7 @@ export function TransactionTable({
                   <EmptyState
                     variant="transactions"
                     className="py-12"
-                    description="Add your first transaction, or reset the demo data from Settings."
+                    description="Add your first transaction to get started."
                     actionLabel="Add transaction"
                     onAction={onAdd}
                   />

@@ -6,7 +6,7 @@ import { PencilIcon, PlusIcon } from "lucide-react"
 import { useState } from "react"
 import { cn } from "@/lib/utils"
 import type { BudgetCategory } from "@/data/seed"
-import { useDemoStore, useMoney } from "@/lib/demo-store"
+import { useFinanceStore, useMoney } from "@/lib/finance-store"
 import { Button } from "@/components/ui/button"
 import { EmptyState } from "@/components/empty-state"
 import { BudgetIcon } from "@/components/budgets/budget-icons"
@@ -16,7 +16,7 @@ const RADIUS = 40
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS
 
 export function BudgetRings() {
-  const { budgets } = useDemoStore()
+  const { budgets } = useFinanceStore()
   const { format } = useMoney()
   const reduceMotion = useReducedMotion()
   const [open, setOpen] = useState(false)

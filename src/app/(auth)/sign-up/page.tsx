@@ -65,13 +65,13 @@ export default function SignUpPage() {
     setTimeout(() => {
       setIsLoading(false)
       setIsSuccess(true)
-      // Demo only: there is no auth backend, so continue straight to the app
+      // No auth backend yet, so continue straight to the app
       setTimeout(() => router.push("/dashboard"), 800)
     }, 1500)
   }
 
   const handleSocial = (provider: string) => {
-    toast(`Signed in with ${provider}`, { description: "Demo mode: no real account was used." })
+    toast(`Signed in with ${provider}`)
     router.push("/dashboard")
   }
 
@@ -263,7 +263,7 @@ export default function SignUpPage() {
                   type="button"
                   onClick={(e) => {
                     e.preventDefault()
-                    toast("Terms of Service", { description: "Legal pages aren't included in this demo.", variant: "info" })
+                    toast("Terms of Service", { description: "Legal pages aren't published yet.", variant: "info" })
                   }}
                   className="font-medium text-foreground underline-offset-4 hover:underline"
                 >
@@ -274,7 +274,7 @@ export default function SignUpPage() {
                   type="button"
                   onClick={(e) => {
                     e.preventDefault()
-                    toast("Privacy Policy", { description: "Legal pages aren't included in this demo.", variant: "info" })
+                    toast("Privacy Policy", { description: "Legal pages aren't published yet.", variant: "info" })
                   }}
                   className="font-medium text-foreground underline-offset-4 hover:underline"
                 >

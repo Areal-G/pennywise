@@ -319,7 +319,7 @@ function generateHistory(): FullTransaction[] {
   return history
 }
 
-/** Every seeded transaction, newest first — the starting point for the demo store */
+/** Every seeded transaction, newest first — the starting point for the finance store */
 export const transactionHistory: FullTransaction[] = [...fullTransactions, ...generateHistory()].sort(
   (a, b) => parseDay(b.date).getTime() - parseDay(a.date).getTime()
 )

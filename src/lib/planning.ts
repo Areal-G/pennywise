@@ -365,7 +365,7 @@ export function matchStatement(lines: StatementLine[], transactions: FullTransac
 
 export type FinanceFacts = ReturnType<typeof buildFinanceFacts>
 
-/** A compact, grounded snapshot of the visitor's demo data */
+/** A compact, grounded snapshot of the user's data */
 export function buildFinanceFacts(
   transactions: FullTransaction[],
   budgets: BudgetCategory[],

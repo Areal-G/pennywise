@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils"
 import { cryptoCoins } from "@/data/seed"
 import type { CryptoPrices } from "./crypto-page-client"
 import { Money } from "@/components/money"
-import { useMoney } from "@/lib/demo-store"
+import { useMoney } from "@/lib/finance-store"
 import { convertToUsd } from "@/lib/currency"
 
 type ActionFlow = "idle" | "input" | "loading" | "success"

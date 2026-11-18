@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { DownloadIcon, PlusIcon } from "lucide-react"
 
 import type { FullTransaction } from "@/data/seed"
-import { useDemoStore } from "@/lib/demo-store"
+import { useFinanceStore } from "@/lib/finance-store"
 import { convertFromUsd } from "@/lib/currency"
 import { toast } from "@/components/ui/toaster"
 import { Button } from "@/components/ui/button"
@@ -25,7 +25,7 @@ const csvCell = (v: string | number) => {
 }
 
 export function TransactionsPageClient() {
-  const { transactions, currency } = useDemoStore()
+  const { transactions, currency } = useFinanceStore()
   const router = useRouter()
   const searchParams = useSearchParams()
   const [search, setSearch] = useState("")

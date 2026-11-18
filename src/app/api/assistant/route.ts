@@ -1,8 +1,8 @@
 import Anthropic from "@anthropic-ai/sdk"
 
 // "Ask Pennywise": streams Claude's answer when ANTHROPIC_API_KEY is set.
-// Without a key the client uses its offline demo responder instead
-// (src/lib/assistant.ts), so the demo works with no setup.
+// Without a key the client uses its offline responder instead
+// (src/lib/assistant.ts), so the assistant works with no setup.
 
 export const dynamic = "force-dynamic"
 
@@ -15,12 +15,11 @@ You answer questions about the user's own finances using only the JSON snapshot 
 - Ground every number in the snapshot. If something isn't in it, say you can't see that data yet.
 - Amounts are in US dollars. Round sensibly and say which period a number covers (e.g. "last 30 days").
 - Be concise: a short direct answer, then at most 4 bullet points ("- ") with specifics. Use **bold** for key numbers.
-- Give practical, general budgeting suggestions where useful. You are not a licensed financial adviser: don't recommend specific investments, securities or trades.
-- This is demo data for a sample user, so never ask for real account details.`
+- Give practical, general budgeting suggestions where useful. You are not a licensed financial adviser: don't recommend specific investments, securities or trades.`
 
 const live = () => Boolean(process.env.ANTHROPIC_API_KEY)
 
-/** Lets the page say whether answers come from Claude or the offline demo */
+/** Lets the page say whether answers come from Claude or the offline responder */
 export function GET() {
   return Response.json({ live: live(), model: live() ? MODEL : null })
 }

@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/chart"
 import { monthComparisons } from "@/data/seed"
 import { Money, useChartAnimation } from "@/components/money"
-import { useMoney } from "@/lib/demo-store"
+import { useMoney } from "@/lib/finance-store"
 
 const chartConfig = {
   thisMonth: {

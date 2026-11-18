@@ -15,7 +15,7 @@ export type Insight = {
 
 const pct = (a: number, b: number) => Math.round(((a - b) / b) * 100)
 
-/** Readable insights computed from the visitor's (editable) demo data */
+/** Readable insights computed from the user's (editable) data */
 export function computeInsights(
   transactions: FullTransaction[],
   budgets: BudgetCategory[],

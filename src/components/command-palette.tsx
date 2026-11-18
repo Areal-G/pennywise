@@ -34,7 +34,6 @@ import {
   MonitorIcon,
   ContrastIcon,
   PlusIcon,
-  RotateCcwIcon,
   CoinsIcon,
   SparklesIcon,
   RepeatIcon,
@@ -44,11 +43,10 @@ import {
 } from "lucide-react"
 import { useTheme } from "next-themes"
 import { contacts } from "@/data/seed"
-import { demoActions, useDemoStore, useMoney } from "@/lib/demo-store"
+import { financeActions, useFinanceStore, useMoney } from "@/lib/finance-store"
 import { CURRENCIES, type Currency } from "@/lib/currency"
 import { Button } from "@/components/ui/button"
 import { MerchantLogo } from "@/components/merchant-logo"
-import { ResetDemoDialog } from "@/components/reset-demo-dialog"
 
 // Open state lives at module level so the header button can open the menu
 let menuOpen = false
@@ -116,10 +114,9 @@ const pages = [
 export function CommandPalette() {
   const open = useMenuOpen()
   const [query, setQuery] = useState("")
-  const [resetOpen, setResetOpen] = useState(false)
   const router = useRouter()
   const { resolvedTheme, setTheme } = useTheme()
-  const { transactions, currency } = useDemoStore()
+  const { transactions, currency } = useFinanceStore()
   const { format } = useMoney()
 
   useEffect(() => {
@@ -161,144 +158,137 @@ export function CommandPalette() {
   }, [query, transactions])
 
   return (
-    <>
-      <CommandDialog
-        open={open}
-        onOpenChange={onOpenChange}
-        title="Command menu"
-        description="Search transactions, jump to a page, or change the theme"
-      >
-        <Command>
-          <CommandInput
-            placeholder="Search transactions, pages, actions…"
-            value={query}
-            onValueChange={setQuery}
-          />
-          <CommandList>
-            <CommandEmpty>No results for “{query}”.</CommandEmpty>
+    <CommandDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Command menu"
+      description="Search transactions, jump to a page, or change the theme"
+    >
+      <Command>
+        <CommandInput
+          placeholder="Search transactions, pages, actions…"
+          value={query}
+          onValueChange={setQuery}
+        />
+        <CommandList>
+          <CommandEmpty>No results for “{query}”.</CommandEmpty>
 
-            <CommandGroup heading={query ? "Transactions" : "Recent transactions"}>
-              {matches.map((tx) => (
-                <CommandItem
-                  key={tx.id}
-                  value={`tx ${tx.merchant} ${tx.category} ${tx.transactionId} ${tx.id}`}
-                  className="[&>svg:last-child]:hidden"
-                  onSelect={() =>
-                    run(() => router.push(`/transactions?q=${encodeURIComponent(tx.merchant)}`))
-                  }
-                >
-                  <MerchantLogo src={tx.logo} name={tx.merchant} size={20} className="rounded-md text-[9px]" />
-                  <span className="truncate">{tx.merchant}</span>
-                  <span className="hidden truncate text-xs text-muted-foreground sm:inline">
-                    {tx.date}
-                  </span>
-                  <span
-                    className={
-                      "ml-auto text-xs tabular-nums " +
-                      (tx.amount > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground")
-                    }
-                  >
-                    {format(tx.amount, { sign: tx.amount > 0 })}
-                  </span>
-                </CommandItem>
-              ))}
-              {query.trim() && (
-                <CommandItem
-                  value="search-all-transactions"
-                  forceMount
-                  onSelect={() =>
-                    run(() => router.push(`/transactions?q=${encodeURIComponent(query.trim())}`))
-                  }
-                >
-                  <SearchIcon />
-                  Search all transactions for “{query.trim()}”
-                </CommandItem>
-              )}
-            </CommandGroup>
-
-            <CommandSeparator />
-
-            <CommandGroup heading="Actions">
-              <CommandItem value="add new transaction" onSelect={() => run(() => router.push("/transactions?new=1"))}>
-                <PlusIcon />
-                Add transaction
-              </CommandItem>
+          <CommandGroup heading={query ? "Transactions" : "Recent transactions"}>
+            {matches.map((tx) => (
               <CommandItem
-                value="toggle theme dark light mode"
-                onSelect={() => run(() => setTheme(resolvedTheme === "dark" ? "light" : "dark"))}
+                key={tx.id}
+                value={`tx ${tx.merchant} ${tx.category} ${tx.transactionId} ${tx.id}`}
+                className="[&>svg:last-child]:hidden"
+                onSelect={() =>
+                  run(() => router.push(`/transactions?q=${encodeURIComponent(tx.merchant)}`))
+                }
               >
-                <ContrastIcon />
-                Toggle theme
-                <CommandShortcut>{resolvedTheme === "dark" ? "Dark" : "Light"}</CommandShortcut>
-              </CommandItem>
-              {(Object.keys(CURRENCIES) as Currency[])
-                .filter((c) => c !== currency)
-                .map((c) => (
-                  <CommandItem
-                    key={c}
-                    value={`currency show amounts in ${c} ${CURRENCIES[c].label}`}
-                    onSelect={() => run(() => demoActions.setCurrency(c))}
-                  >
-                    <CoinsIcon />
-                    Show amounts in {c}
-                  </CommandItem>
-                ))}
-              <CommandItem value="reset demo data" onSelect={() => run(() => setResetOpen(true))}>
-                <RotateCcwIcon />
-                Reset demo data
-              </CommandItem>
-            </CommandGroup>
-
-            <CommandSeparator />
-
-            <CommandGroup heading="Pages">
-              {pages.map((page) => (
-                <CommandItem
-                  key={page.href}
-                  value={`go to page ${page.label}`}
-                  onSelect={() => run(() => router.push(page.href))}
+                <MerchantLogo src={tx.logo} name={tx.merchant} size={20} className="rounded-md text-[9px]" />
+                <span className="truncate">{tx.merchant}</span>
+                <span className="hidden truncate text-xs text-muted-foreground sm:inline">
+                  {tx.date}
+                </span>
+                <span
+                  className={
+                    "ml-auto text-xs tabular-nums " +
+                    (tx.amount > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground")
+                  }
                 >
-                  <page.icon />
-                  {page.label}
+                  {format(tx.amount, { sign: tx.amount > 0 })}
+                </span>
+              </CommandItem>
+            ))}
+            {query.trim() && (
+              <CommandItem
+                value="search-all-transactions"
+                forceMount
+                onSelect={() =>
+                  run(() => router.push(`/transactions?q=${encodeURIComponent(query.trim())}`))
+                }
+              >
+                <SearchIcon />
+                Search all transactions for “{query.trim()}”
+              </CommandItem>
+            )}
+          </CommandGroup>
+
+          <CommandSeparator />
+
+          <CommandGroup heading="Actions">
+            <CommandItem value="add new transaction" onSelect={() => run(() => router.push("/transactions?new=1"))}>
+              <PlusIcon />
+              Add transaction
+            </CommandItem>
+            <CommandItem
+              value="toggle theme dark light mode"
+              onSelect={() => run(() => setTheme(resolvedTheme === "dark" ? "light" : "dark"))}
+            >
+              <ContrastIcon />
+              Toggle theme
+              <CommandShortcut>{resolvedTheme === "dark" ? "Dark" : "Light"}</CommandShortcut>
+            </CommandItem>
+            {(Object.keys(CURRENCIES) as Currency[])
+              .filter((c) => c !== currency)
+              .map((c) => (
+                <CommandItem
+                  key={c}
+                  value={`currency show amounts in ${c} ${CURRENCIES[c].label}`}
+                  onSelect={() => run(() => financeActions.setCurrency(c))}
+                >
+                  <CoinsIcon />
+                  Show amounts in {c}
                 </CommandItem>
               ))}
-            </CommandGroup>
+          </CommandGroup>
 
-            <CommandSeparator />
+          <CommandSeparator />
 
-            <CommandGroup heading="Quick transfer">
-              {contacts.slice(0, 4).map((c) => (
-                <CommandItem
-                  key={c.id}
-                  value={`send money to ${c.name}`}
-                  onSelect={() => run(() => router.push("/transfers"))}
-                >
-                  <SendIcon />
-                  Send to {c.name}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-
-            <CommandSeparator />
-
-            <CommandGroup heading="Theme">
-              <CommandItem value="light mode theme" onSelect={() => run(() => setTheme("light"))}>
-                <SunIcon />
-                Light mode
+          <CommandGroup heading="Pages">
+            {pages.map((page) => (
+              <CommandItem
+                key={page.href}
+                value={`go to page ${page.label}`}
+                onSelect={() => run(() => router.push(page.href))}
+              >
+                <page.icon />
+                {page.label}
               </CommandItem>
-              <CommandItem value="dark mode theme" onSelect={() => run(() => setTheme("dark"))}>
-                <MoonIcon />
-                Dark mode
+            ))}
+          </CommandGroup>
+
+          <CommandSeparator />
+
+          <CommandGroup heading="Quick transfer">
+            {contacts.slice(0, 4).map((c) => (
+              <CommandItem
+                key={c.id}
+                value={`send money to ${c.name}`}
+                onSelect={() => run(() => router.push("/transfers"))}
+              >
+                <SendIcon />
+                Send to {c.name}
               </CommandItem>
-              <CommandItem value="system theme" onSelect={() => run(() => setTheme("system"))}>
-                <MonitorIcon />
-                System theme
-              </CommandItem>
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </CommandDialog>
-      <ResetDemoDialog open={resetOpen} onOpenChange={setResetOpen} />
-    </>
+            ))}
+          </CommandGroup>
+
+          <CommandSeparator />
+
+          <CommandGroup heading="Theme">
+            <CommandItem value="light mode theme" onSelect={() => run(() => setTheme("light"))}>
+              <SunIcon />
+              Light mode
+            </CommandItem>
+            <CommandItem value="dark mode theme" onSelect={() => run(() => setTheme("dark"))}>
+              <MoonIcon />
+              Dark mode
+            </CommandItem>
+            <CommandItem value="system theme" onSelect={() => run(() => setTheme("system"))}>
+              <MonitorIcon />
+              System theme
+            </CommandItem>
+          </CommandGroup>
+        </CommandList>
+      </Command>
+    </CommandDialog>
   )
 }

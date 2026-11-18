@@ -28,7 +28,7 @@ import { today } from "@/lib/mock"
 import { cn } from "@/lib/utils"
 import type { DateRange } from "react-day-picker"
 import { Money, useChartAnimation } from "@/components/money"
-import { useMoney } from "@/lib/demo-store"
+import { useMoney } from "@/lib/finance-store"
 
 function SquareDot({ cx, cy, fill, opacity = 1, size = 6 }: DotProps & { size?: number; opacity?: number }) {
   if (cx == null || cy == null) return null

@@ -24,7 +24,7 @@ import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
 import { moneyMovementByPeriod } from "@/data/seed"
 import { ArrowDownLeftIcon, ArrowUpRightIcon } from "lucide-react"
 import { Money, useChartAnimation } from "@/components/money"
-import { useMoney } from "@/lib/demo-store"
+import { useMoney } from "@/lib/finance-store"
 
 const chartConfig = {
   moneyIn: {

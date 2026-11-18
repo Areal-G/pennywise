@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { useDemoStore, useMoney } from "@/lib/demo-store"
+import { useFinanceStore, useMoney } from "@/lib/finance-store"
 import { MerchantLogo } from "@/components/merchant-logo"
 import { EmptyState } from "@/components/empty-state"
 import {
@@ -28,7 +28,7 @@ const categoryColors: Record<string, string> = {
 }
 
 export function RecentTransactions() {
-  const { transactions } = useDemoStore()
+  const { transactions } = useFinanceStore()
   const { format } = useMoney()
   const recent = transactions.slice(0, 6)
   return (
@@ -62,7 +62,7 @@ export function RecentTransactions() {
 
             {/* Rows */}
             {recent.length === 0 && (
-              <EmptyState variant="transactions" className="py-8" description="Add a transaction or reset the demo data from Settings." />
+              <EmptyState variant="transactions" className="py-8" description="Add a transaction to see it here." />
             )}
             {recent.map((tx) => (
               <div

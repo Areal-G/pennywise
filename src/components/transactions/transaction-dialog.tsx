@@ -4,7 +4,7 @@ import * as React from "react"
 import { Trash2Icon } from "lucide-react"
 
 import type { FullTransaction } from "@/data/seed"
-import { demoActions, newId, useMoney } from "@/lib/demo-store"
+import { financeActions, newId, useMoney } from "@/lib/finance-store"
 import { convertFromUsd, convertToUsd } from "@/lib/currency"
 import { formatDay, isoDay, parseDay, today } from "@/lib/mock"
 import { toast } from "@/components/ui/toaster"
@@ -141,7 +141,7 @@ export function TransactionDialog({
       date: formatDay(new Date(y, m - 1, d)),
       notes: form.notes.trim() || undefined,
     }
-    demoActions.saveTransaction(saved)
+    financeActions.saveTransaction(saved)
     toast(transaction ? "Transaction updated" : "Transaction added", {
       description: saved.merchant,
       variant: "success",
@@ -151,7 +151,7 @@ export function TransactionDialog({
 
   function handleDelete() {
     if (!transaction) return
-    demoActions.deleteTransaction(transaction.id)
+    financeActions.deleteTransaction(transaction.id)
     toast("Transaction deleted", { description: transaction.merchant })
     onOpenChange(false)
   }
@@ -163,7 +163,7 @@ export function TransactionDialog({
           <DialogHeader>
             <DialogTitle>{transaction ? "Edit transaction" : "Add transaction"}</DialogTitle>
             <DialogDescription>
-              Demo data is saved in this browser only. Amounts are in {currency}.
+              Data is saved in this browser only. Amounts are in {currency}.
             </DialogDescription>
           </DialogHeader>
 

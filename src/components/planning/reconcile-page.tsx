@@ -15,7 +15,7 @@ import {
   SparklesIcon,
 } from "lucide-react"
 
-import { demoActions, useDemoStore, useMoney } from "@/lib/demo-store"
+import { financeActions, useFinanceStore, useMoney } from "@/lib/finance-store"
 import { matchStatement, STATEMENT_CARD, STATEMENT_DAYS, statementLines, type Match } from "@/lib/planning"
 import { today } from "@/lib/mock"
 import { cn } from "@/lib/utils"
@@ -36,7 +36,7 @@ const titleCase = (s: string) =>
     .replace(/\b\w/g, (c) => c.toUpperCase())
 
 export function ReconcilePage() {
-  const { transactions } = useDemoStore()
+  const { transactions } = useFinanceStore()
   const { format: money } = useMoney()
   const [view, setView] = React.useState<View>("review")
   const [confirmed, setConfirmed] = React.useState<Set<string>>(new Set())
@@ -64,14 +64,14 @@ export function ReconcilePage() {
 
   const acceptSuggested = (m: Match) => {
     if (!m.tx) return
-    demoActions.saveTransaction({ ...m.tx, amount: m.line.amount, notes: m.tx.notes ?? "Amount corrected from bank statement" })
+    financeActions.saveTransaction({ ...m.tx, amount: m.line.amount, notes: m.tx.notes ?? "Amount corrected from bank statement" })
     confirm(m.line.id)
     toast("Match accepted", { description: `${m.tx.merchant} now shows the statement amount.` })
   }
 
   const addToApp = (m: Match) => {
     const income = m.line.amount > 0
-    demoActions.saveTransaction({
+    financeActions.saveTransaction({
       id: `rc_${m.line.id}`,
       merchant: titleCase(m.line.description),
       transactionId: `STM_${m.line.id.slice(-6).toUpperCase()}`,

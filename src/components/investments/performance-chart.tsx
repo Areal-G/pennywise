@@ -17,7 +17,7 @@ import {
 import { cn } from "@/lib/utils"
 import { portfolioHistory } from "@/data/seed"
 import { useChartAnimation } from "@/components/money"
-import { useMoney } from "@/lib/demo-store"
+import { useMoney } from "@/lib/finance-store"
 
 const PERIODS = [
   { label: "1M", months: 1 },

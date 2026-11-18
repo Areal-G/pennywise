@@ -20,7 +20,7 @@ import {
 } from "lucide-react"
 import { motion, AnimatePresence } from "motion/react"
 import { Money } from "@/components/money"
-import { useMoney } from "@/lib/demo-store"
+import { useMoney } from "@/lib/finance-store"
 import { convertToUsd } from "@/lib/currency"
 
 type SendState = "idle" | "sending" | "success"

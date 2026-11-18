@@ -15,9 +15,9 @@ import {
   TrendingUpIcon,
 } from "lucide-react"
 
-import { useDemoStore, useMoney } from "@/lib/demo-store"
+import { useFinanceStore, useMoney } from "@/lib/finance-store"
 import { buildFinanceFacts } from "@/lib/planning"
-import { demoAnswer, SUGGESTED_PROMPTS } from "@/lib/assistant"
+import { offlineAnswer, SUGGESTED_PROMPTS } from "@/lib/assistant"
 import { useProfile } from "@/lib/profile"
 import { cn } from "@/lib/utils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -89,7 +89,7 @@ function Answer({ text }: { text: string }) {
 const newMsgId = () => Math.random().toString(36).slice(2)
 
 export function AssistantChat() {
-  const { transactions, budgets, goals } = useDemoStore()
+  const { transactions, budgets, goals } = useFinanceStore()
   const { format } = useMoney()
   const profile = useProfile()
   const reduceMotion = useReducedMotion()
@@ -180,11 +180,11 @@ export function AssistantChat() {
       } else {
         // Short pause so it feels like a reply, then type it out
         await new Promise((r) => setTimeout(r, reduceMotion ? 0 : 450))
-        await typeOut(reply.id, demoAnswer(q, facts, fmt))
+        await typeOut(reply.id, offlineAnswer(q, facts, fmt))
       }
     } catch (error) {
       if (!(error instanceof DOMException && error.name === "AbortError")) {
-        await typeOut(reply.id, demoAnswer(q, facts, fmt))
+        await typeOut(reply.id, offlineAnswer(q, facts, fmt))
       }
     } finally {
       stopRef.current = () => {}
@@ -228,7 +228,7 @@ export function AssistantChat() {
             {live !== null && (
               <Badge variant={live ? "default" : "secondary"} className="gap-1 text-[10px]">
                 <SparklesIcon className="size-3" />
-                {live ? "Claude Sonnet 5.5" : "Demo mode"}
+                {live ? "Claude Sonnet 5.5" : "Offline"}
               </Badge>
             )}
             {messages.length > 0 && (
@@ -347,7 +347,7 @@ export function AssistantChat() {
             )}
           </div>
           <p className="mt-2 text-center text-[11px] text-muted-foreground">
-            {live === false ? "Demo answers computed from your sample data. " : ""}General guidance, not financial advice.
+            {live === false ? "Offline answers computed from your data. " : ""}General guidance, not financial advice.
           </p>
         </form>
       </Card>

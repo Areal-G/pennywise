@@ -1,5 +1,5 @@
 // Display currencies. All amounts in the app are stored in USD and converted at
-// fixed demo rates when shown (no live exchange rates).
+// fixed rates when shown (no live exchange rates).
 export const CURRENCIES = {
   USD: { label: "US Dollar", rate: 1, locale: "en-US" },
   EUR: { label: "Euro", rate: 0.92, locale: "en-IE" },
